@@ -8,7 +8,6 @@ class ServerConfig {
   static int get defaultGrpcPort => kIsWeb ? 8080 : 9090;
   static int get defaultRestPort => kIsWeb ? 8080 : 9091;
 
-  // ignore: non_constant_identifier_names
   static Future<({String host, int grpcPort, int restPort})> getConfig() async {
     final prefs = await SharedPreferences.getInstance();
     final grpcUrl = prefs.getString(_keyGrpcUrl) ?? '';
