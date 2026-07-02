@@ -1,9 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:echo_vault_app/main.dart';
 
 void main() {
   testWidgets('app starts without errors', (tester) async {
-    await tester.pumpWidget(const EchoVaultApp());
+    await tester.pumpWidget(const ProviderScope(child: EchoVaultApp()));
     expect(find.byType(EchoVaultApp), findsOneWidget);
   });
 }
