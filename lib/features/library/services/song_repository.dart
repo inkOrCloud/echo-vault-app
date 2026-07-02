@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'package:grpc/grpc.dart';
+import 'package:fixnum/fixnum.dart';
 import 'package:echo_vault_app/core/grpc/client.dart';
 import 'package:echo_vault_app/core/grpc/grpc_rpc_client.dart';
-import 'package:echo_vault_app/core/grpc/proto_codec.dart';
 import 'package:echo_vault_app/models/generated/echo_vault/song/v1/song_service.pb.dart';
+import 'package:echo_vault_app/models/generated/echo_vault/common/v1/types.pb.dart';
 
 class CheckResult {
   final String fileHash;
@@ -35,11 +37,10 @@ class SongRepository {
   }) async {
     try {
       final req = CheckSongsByHashRequest(deviceId: deviceId, fileHashes: fileHashes);
-      final reqBytes = ProtoCodec.encodeCheckSongsByHashRequest(req);
       final respBytes = await _client.unaryCallRaw(
-        servicePath: _svcPath, methodName: 'CheckSongsByHash', requestBytes: reqBytes,
+        servicePath: _svcPath, methodName: 'CheckSongsByHash', requestBytes: req.writeToBuffer(),
       );
-      final resp = ProtoCodec.decodeCheckSongsByHashResponse(respBytes);
+      final resp = CheckSongsByHashResponse()..mergeFromBuffer(respBytes);
       return resp.results.map((r) => CheckResult(fileHash: r.fileHash, exists: r.exists, song: r.song)).toList();
     } on GrpcError catch (e) {
       throw SongRepositoryException(e.message ?? 'unknown error', grpcCode: e.code);
@@ -55,13 +56,12 @@ class SongRepository {
       final req = PublishSongRequest(
         fileHash: fileHash, title: title, artist: artist, album: album ?? '',
         genre: genre ?? '', trackNumber: trackNumber, discNumber: discNumber,
-        year: year, fileName: fileName, fileSize: fileSize, mimeType: mimeType,
+        year: year, fileName: fileName, fileSize: Int64(fileSize), mimeType: mimeType,
       );
-      final reqBytes = ProtoCodec.encodePublishSongRequest(req);
       final respBytes = await _client.unaryCallRaw(
-        servicePath: _svcPath, methodName: 'PublishSong', requestBytes: reqBytes,
+        servicePath: _svcPath, methodName: 'PublishSong', requestBytes: req.writeToBuffer(),
       );
-      return ProtoCodec.decodePublishSongResponse(respBytes).song;
+      return (PublishSongResponse()..mergeFromBuffer(respBytes)).song;
     } on GrpcError catch (e) {
       throw SongRepositoryException(e.message ?? 'unknown error', grpcCode: e.code);
     }
@@ -69,11 +69,11 @@ class SongRepository {
 
   Future<List<Song>> searchSongs(String query, {int pageSize = 20}) async {
     try {
-      final reqBytes = ProtoCodec.encodeSearchSongsRequest(query, pageSize);
+      final req = SearchSongsRequest(query: query, pagination: PaginationRequest(pageSize: pageSize));
       final respBytes = await _client.unaryCallRaw(
-        servicePath: _svcPath, methodName: 'SearchSongs', requestBytes: reqBytes,
+        servicePath: _svcPath, methodName: 'SearchSongs', requestBytes: req.writeToBuffer(),
       );
-      return ProtoCodec.decodeRepeatedSongs(respBytes);
+      return (SearchSongsResponse()..mergeFromBuffer(respBytes)).songs;
     } on GrpcError catch (e) {
       throw SongRepositoryException(e.message ?? 'unknown error', grpcCode: e.code);
     }
@@ -81,31 +81,11 @@ class SongRepository {
 
   Future<List<Song>> listSongs({int pageSize = 20}) async {
     try {
-      final buf = <int>[];
-      var tag = (1 << 3) | 2;
-      while (tag >= 0x80) { buf.add((tag & 0x7F) | 0x80); tag >>= 7; }
-      buf.add(tag & 0x7F);
-      var len = 0;
-      var ps = pageSize;
-      len = 0; var t = ps; do { len++; t >>= 7; } while (t > 0);
-      var tmp = ps;
-      while (tmp >= 0x80) { buf.add(0); tmp >>= 7; } // placeholder for tag
-      buf.removeRange(buf.length - len, buf.length); // remove bogus
-      final inner = <int>[];
-      var pv = ps;
-      while (pv >= 0x80) { inner.add((pv & 0x7F) | 0x80); pv >>= 7; }
-      inner.add(pv & 0x7F);
-      tag = (1 << 3) | 2;
-      while (tag >= 0x80) { buf.add((tag & 0x7F) | 0x80); tag >>= 7; }
-      buf.add(tag & 0x7F);
-      len = inner.length;
-      while (len >= 0x80) { buf.add((len & 0x7F) | 0x80); len >>= 7; }
-      buf.add(len & 0x7F);
-      buf.addAll(inner);
+      final req = ListSongsRequest(pagination: PaginationRequest(pageSize: pageSize));
       final respBytes = await _client.unaryCallRaw(
-        servicePath: _svcPath, methodName: 'ListSongs', requestBytes: buf,
+        servicePath: _svcPath, methodName: 'ListSongs', requestBytes: req.writeToBuffer(),
       );
-      return ProtoCodec.decodeRepeatedSongs(respBytes);
+      return (ListSongsResponse()..mergeFromBuffer(respBytes)).songs;
     } on GrpcError catch (e) {
       throw SongRepositoryException(e.message ?? 'unknown error', grpcCode: e.code);
     }
@@ -113,19 +93,11 @@ class SongRepository {
 
   Future<Song> getSong(String id) async {
     try {
-      final buf = <int>[];
-      final idBytes = id.codeUnits;
-      var tag = (1 << 3) | 2;
-      while (tag >= 0x80) { buf.add((tag & 0x7F) | 0x80); tag >>= 7; }
-      buf.add(tag & 0x7F);
-      var len = idBytes.length;
-      while (len >= 0x80) { buf.add((len & 0x7F) | 0x80); len >>= 7; }
-      buf.add(len & 0x7F);
-      buf.addAll(idBytes);
+      final req = GetSongRequest(id: id);
       final respBytes = await _client.unaryCallRaw(
-        servicePath: _svcPath, methodName: 'GetSong', requestBytes: buf,
+        servicePath: _svcPath, methodName: 'GetSong', requestBytes: req.writeToBuffer(),
       );
-      return ProtoCodec.decodeSong(respBytes);
+      return (GetSongResponse()..mergeFromBuffer(respBytes)).song;
     } on GrpcError catch (e) {
       throw SongRepositoryException(e.message ?? 'unknown error', grpcCode: e.code);
     }

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:echo_vault_app/models/generated/echo_vault/song/v1/song_service.pb.dart';
-import 'package:echo_vault_app/models/generated/echo_vault/common/v1/types.pb.dart';
+import 'package:echo_vault_app/models/generated/echo_vault/common/v1/types.pbenum.dart';
 
 String formatDuration(int ms) {
   if (ms <= 0) return '--:--';
@@ -15,10 +15,10 @@ class SongListTile extends StatelessWidget {
 
   IconData _statusIcon() {
     switch (song.fileStatus) {
-      case FileStatus.fileStatusLocalOnly: return Icons.storage;
-      case FileStatus.fileStatusUploaded:  return Icons.cloud_done;
-      case FileStatus.fileStatusDownloaded: return Icons.download_done;
-      case FileStatus.fileStatusCloudOnly: return Icons.cloud_download;
+      case FileStatus.FILE_STATUS_LOCAL_ONLY: return Icons.storage;
+      case FileStatus.FILE_STATUS_UPLOADED:  return Icons.cloud_done;
+      case FileStatus.FILE_STATUS_DOWNLOADED: return Icons.download_done;
+      case FileStatus.FILE_STATUS_CLOUD_ONLY: return Icons.cloud_download;
       default: return Icons.music_note;
     }
   }
