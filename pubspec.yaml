@@ -7,6 +7,9 @@ environment:
   sdk: ^3.12.2
 
 dependencies:
+  crypto: ^3.0.6
+  file_picker: ^8.1.7
+  intl: ^0.20.2
   flutter:
     sdk: flutter
   flutter_riverpod: ^2.6.1
@@ -26,6 +29,7 @@ dependencies:
   sqflite_common_ffi: ^2.4.2
 
 dev_dependencies:
+  mocktail: ^1.0.4
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
