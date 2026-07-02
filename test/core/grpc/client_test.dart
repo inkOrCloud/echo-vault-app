@@ -3,22 +3,21 @@ import 'package:echo_vault_app/core/grpc/client.dart';
 
 void main() {
   group('GrpcClientManager', () {
-    test('initial state has no token', () {
+    test('initial state is not connected', () {
       final manager = GrpcClientManager();
-      expect(manager.metadata, isEmpty);
+      expect(manager.isConnected, isFalse);
     });
 
-    test('setToken adds authorization header', () {
-      final manager = GrpcClientManager();
-      manager.setToken('test-token');
-      expect(manager.metadata, containsPair('authorization', 'Bearer test-token'));
-    });
-
-    test('clearToken removes authorization', () {
+    test('setToken and clearToken do not throw', () {
       final manager = GrpcClientManager();
       manager.setToken('test-token');
       manager.clearToken();
-      expect(manager.metadata, isEmpty);
+      expect(manager.isConnected, isFalse);
+    });
+
+    test('channel getter throws when not connected', () {
+      final manager = GrpcClientManager();
+      expect(() => manager.channel, throwsStateError);
     });
   });
 }

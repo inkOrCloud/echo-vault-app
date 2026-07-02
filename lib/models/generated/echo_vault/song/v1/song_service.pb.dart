@@ -5,16 +5,15 @@
 // @dart = 2.12
 // ignore_for_file: annotate_overrides,camel_case_types,constant_identifier_names,directives_ordering,library_prefixes,non_constant_identifier_names,prefer_final_fields,return_of_invalid_type,unnecessary_const,unnecessary_import,unnecessary_this,unused_import,unused_shown_name
 
-import 'dart:async' as $async;
 import 'dart:core' as $core;
 
 import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import '../../../google/protobuf/timestamp.pb.dart' as $0;
-import '../../common/v1/types.pb.dart' as $1;
+import '../../../google/protobuf/timestamp.pb.dart' as $5;
+import '../../common/v1/types.pb.dart' as $6;
 
-import '../../common/v1/types.pbenum.dart' as $1;
+import '../../common/v1/types.pbenum.dart' as $6;
 
 class Song extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'Song', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'echo_vault.song.v1'), createEmptyInstance: create)
@@ -33,13 +32,13 @@ class Song extends $pb.GeneratedMessage {
     ..aOS(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'mimeType')
     ..a<$core.int>(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'bitrate', $pb.PbFieldType.O3)
     ..a<$core.int>(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sampleRate', $pb.PbFieldType.O3)
-    ..e<$1.FileSource>(16, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'source', $pb.PbFieldType.OE, defaultOrMaker: $1.FileSource.FILE_SOURCE_UNSPECIFIED, valueOf: $1.FileSource.valueOf, enumValues: $1.FileSource.values)
-    ..e<$1.FileStatus>(17, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'fileStatus', $pb.PbFieldType.OE, defaultOrMaker: $1.FileStatus.FILE_STATUS_UNSPECIFIED, valueOf: $1.FileStatus.valueOf, enumValues: $1.FileStatus.values)
+    ..e<$6.FileSource>(16, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'source', $pb.PbFieldType.OE, defaultOrMaker: $6.FileSource.FILE_SOURCE_UNSPECIFIED, valueOf: $6.FileSource.valueOf, enumValues: $6.FileSource.values)
+    ..e<$6.FileStatus>(17, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'fileStatus', $pb.PbFieldType.OE, defaultOrMaker: $6.FileStatus.FILE_STATUS_UNSPECIFIED, valueOf: $6.FileStatus.valueOf, enumValues: $6.FileStatus.values)
     ..aOS(18, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'ownerId')
     ..aInt64(19, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'version')
     ..aOB(20, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isDeleted')
-    ..aOM<$0.Timestamp>(21, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $0.Timestamp.create)
-    ..aOM<$0.Timestamp>(22, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $0.Timestamp.create)
+    ..aOM<$5.Timestamp>(21, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $5.Timestamp.create)
+    ..aOM<$5.Timestamp>(22, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $5.Timestamp.create)
     ..aOS(23, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'coverUrl')
     ..aOS(24, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'audioUrl')
     ..hasRequiredFields = false
@@ -62,13 +61,13 @@ class Song extends $pb.GeneratedMessage {
     $core.String? mimeType,
     $core.int? bitrate,
     $core.int? sampleRate,
-    $1.FileSource? source,
-    $1.FileStatus? fileStatus,
+    $6.FileSource? source,
+    $6.FileStatus? fileStatus,
     $core.String? ownerId,
     $fixnum.Int64? version,
     $core.bool? isDeleted,
-    $0.Timestamp? createdAt,
-    $0.Timestamp? updatedAt,
+    $5.Timestamp? createdAt,
+    $5.Timestamp? updatedAt,
     $core.String? coverUrl,
     $core.String? audioUrl,
   }) {
@@ -304,18 +303,18 @@ class Song extends $pb.GeneratedMessage {
   void clearSampleRate() => clearField(15);
 
   @$pb.TagNumber(16)
-  $1.FileSource get source => $_getN(15);
+  $6.FileSource get source => $_getN(15);
   @$pb.TagNumber(16)
-  set source($1.FileSource v) { setField(16, v); }
+  set source($6.FileSource v) { setField(16, v); }
   @$pb.TagNumber(16)
   $core.bool hasSource() => $_has(15);
   @$pb.TagNumber(16)
   void clearSource() => clearField(16);
 
   @$pb.TagNumber(17)
-  $1.FileStatus get fileStatus => $_getN(16);
+  $6.FileStatus get fileStatus => $_getN(16);
   @$pb.TagNumber(17)
-  set fileStatus($1.FileStatus v) { setField(17, v); }
+  set fileStatus($6.FileStatus v) { setField(17, v); }
   @$pb.TagNumber(17)
   $core.bool hasFileStatus() => $_has(16);
   @$pb.TagNumber(17)
@@ -349,26 +348,26 @@ class Song extends $pb.GeneratedMessage {
   void clearIsDeleted() => clearField(20);
 
   @$pb.TagNumber(21)
-  $0.Timestamp get createdAt => $_getN(20);
+  $5.Timestamp get createdAt => $_getN(20);
   @$pb.TagNumber(21)
-  set createdAt($0.Timestamp v) { setField(21, v); }
+  set createdAt($5.Timestamp v) { setField(21, v); }
   @$pb.TagNumber(21)
   $core.bool hasCreatedAt() => $_has(20);
   @$pb.TagNumber(21)
   void clearCreatedAt() => clearField(21);
   @$pb.TagNumber(21)
-  $0.Timestamp ensureCreatedAt() => $_ensure(20);
+  $5.Timestamp ensureCreatedAt() => $_ensure(20);
 
   @$pb.TagNumber(22)
-  $0.Timestamp get updatedAt => $_getN(21);
+  $5.Timestamp get updatedAt => $_getN(21);
   @$pb.TagNumber(22)
-  set updatedAt($0.Timestamp v) { setField(22, v); }
+  set updatedAt($5.Timestamp v) { setField(22, v); }
   @$pb.TagNumber(22)
   $core.bool hasUpdatedAt() => $_has(21);
   @$pb.TagNumber(22)
   void clearUpdatedAt() => clearField(22);
   @$pb.TagNumber(22)
-  $0.Timestamp ensureUpdatedAt() => $_ensure(21);
+  $5.Timestamp ensureUpdatedAt() => $_ensure(21);
 
   @$pb.TagNumber(23)
   $core.String get coverUrl => $_getSZ(22);
@@ -1166,7 +1165,7 @@ class GetSongResponse extends $pb.GeneratedMessage {
 
 class ListSongsRequest extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ListSongsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'echo_vault.song.v1'), createEmptyInstance: create)
-    ..aOM<$1.PaginationRequest>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pagination', subBuilder: $1.PaginationRequest.create)
+    ..aOM<$6.PaginationRequest>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pagination', subBuilder: $6.PaginationRequest.create)
     ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'ownerId')
     ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sortBy')
     ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sortOrder')
@@ -1175,7 +1174,7 @@ class ListSongsRequest extends $pb.GeneratedMessage {
 
   ListSongsRequest._() : super();
   factory ListSongsRequest({
-    $1.PaginationRequest? pagination,
+    $6.PaginationRequest? pagination,
     $core.String? ownerId,
     $core.String? sortBy,
     $core.String? sortOrder,
@@ -1217,15 +1216,15 @@ class ListSongsRequest extends $pb.GeneratedMessage {
   static ListSongsRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $1.PaginationRequest get pagination => $_getN(0);
+  $6.PaginationRequest get pagination => $_getN(0);
   @$pb.TagNumber(1)
-  set pagination($1.PaginationRequest v) { setField(1, v); }
+  set pagination($6.PaginationRequest v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasPagination() => $_has(0);
   @$pb.TagNumber(1)
   void clearPagination() => clearField(1);
   @$pb.TagNumber(1)
-  $1.PaginationRequest ensurePagination() => $_ensure(0);
+  $6.PaginationRequest ensurePagination() => $_ensure(0);
 
   @$pb.TagNumber(2)
   $core.String get ownerId => $_getSZ(1);
@@ -1258,14 +1257,14 @@ class ListSongsRequest extends $pb.GeneratedMessage {
 class ListSongsResponse extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ListSongsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'echo_vault.song.v1'), createEmptyInstance: create)
     ..pc<Song>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'songs', $pb.PbFieldType.PM, subBuilder: Song.create)
-    ..aOM<$1.PaginationResponse>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pagination', subBuilder: $1.PaginationResponse.create)
+    ..aOM<$6.PaginationResponse>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pagination', subBuilder: $6.PaginationResponse.create)
     ..hasRequiredFields = false
   ;
 
   ListSongsResponse._() : super();
   factory ListSongsResponse({
     $core.Iterable<Song>? songs,
-    $1.PaginationResponse? pagination,
+    $6.PaginationResponse? pagination,
   }) {
     final _result = create();
     if (songs != null) {
@@ -1301,28 +1300,28 @@ class ListSongsResponse extends $pb.GeneratedMessage {
   $core.List<Song> get songs => $_getList(0);
 
   @$pb.TagNumber(2)
-  $1.PaginationResponse get pagination => $_getN(1);
+  $6.PaginationResponse get pagination => $_getN(1);
   @$pb.TagNumber(2)
-  set pagination($1.PaginationResponse v) { setField(2, v); }
+  set pagination($6.PaginationResponse v) { setField(2, v); }
   @$pb.TagNumber(2)
   $core.bool hasPagination() => $_has(1);
   @$pb.TagNumber(2)
   void clearPagination() => clearField(2);
   @$pb.TagNumber(2)
-  $1.PaginationResponse ensurePagination() => $_ensure(1);
+  $6.PaginationResponse ensurePagination() => $_ensure(1);
 }
 
 class SearchSongsRequest extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SearchSongsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'echo_vault.song.v1'), createEmptyInstance: create)
     ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'query')
-    ..aOM<$1.PaginationRequest>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pagination', subBuilder: $1.PaginationRequest.create)
+    ..aOM<$6.PaginationRequest>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pagination', subBuilder: $6.PaginationRequest.create)
     ..hasRequiredFields = false
   ;
 
   SearchSongsRequest._() : super();
   factory SearchSongsRequest({
     $core.String? query,
-    $1.PaginationRequest? pagination,
+    $6.PaginationRequest? pagination,
   }) {
     final _result = create();
     if (query != null) {
@@ -1364,28 +1363,28 @@ class SearchSongsRequest extends $pb.GeneratedMessage {
   void clearQuery() => clearField(1);
 
   @$pb.TagNumber(2)
-  $1.PaginationRequest get pagination => $_getN(1);
+  $6.PaginationRequest get pagination => $_getN(1);
   @$pb.TagNumber(2)
-  set pagination($1.PaginationRequest v) { setField(2, v); }
+  set pagination($6.PaginationRequest v) { setField(2, v); }
   @$pb.TagNumber(2)
   $core.bool hasPagination() => $_has(1);
   @$pb.TagNumber(2)
   void clearPagination() => clearField(2);
   @$pb.TagNumber(2)
-  $1.PaginationRequest ensurePagination() => $_ensure(1);
+  $6.PaginationRequest ensurePagination() => $_ensure(1);
 }
 
 class SearchSongsResponse extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SearchSongsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'echo_vault.song.v1'), createEmptyInstance: create)
     ..pc<Song>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'songs', $pb.PbFieldType.PM, subBuilder: Song.create)
-    ..aOM<$1.PaginationResponse>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pagination', subBuilder: $1.PaginationResponse.create)
+    ..aOM<$6.PaginationResponse>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pagination', subBuilder: $6.PaginationResponse.create)
     ..hasRequiredFields = false
   ;
 
   SearchSongsResponse._() : super();
   factory SearchSongsResponse({
     $core.Iterable<Song>? songs,
-    $1.PaginationResponse? pagination,
+    $6.PaginationResponse? pagination,
   }) {
     final _result = create();
     if (songs != null) {
@@ -1421,15 +1420,15 @@ class SearchSongsResponse extends $pb.GeneratedMessage {
   $core.List<Song> get songs => $_getList(0);
 
   @$pb.TagNumber(2)
-  $1.PaginationResponse get pagination => $_getN(1);
+  $6.PaginationResponse get pagination => $_getN(1);
   @$pb.TagNumber(2)
-  set pagination($1.PaginationResponse v) { setField(2, v); }
+  set pagination($6.PaginationResponse v) { setField(2, v); }
   @$pb.TagNumber(2)
   $core.bool hasPagination() => $_has(1);
   @$pb.TagNumber(2)
   void clearPagination() => clearField(2);
   @$pb.TagNumber(2)
-  $1.PaginationResponse ensurePagination() => $_ensure(1);
+  $6.PaginationResponse ensurePagination() => $_ensure(1);
 }
 
 class ListDeviceLocalSongsRequest extends $pb.GeneratedMessage {
@@ -1518,43 +1517,5 @@ class ListDeviceLocalSongsResponse extends $pb.GeneratedMessage {
 
   @$pb.TagNumber(1)
   $core.List<Song> get songs => $_getList(0);
-}
-
-class SongServiceApi {
-  $pb.RpcClient _client;
-  SongServiceApi(this._client);
-
-  $async.Future<CheckSongsByHashResponse> checkSongsByHash($pb.ClientContext? ctx, CheckSongsByHashRequest request) {
-    var emptyResponse = CheckSongsByHashResponse();
-    return _client.invoke<CheckSongsByHashResponse>(ctx, 'SongService', 'CheckSongsByHash', request, emptyResponse);
-  }
-  $async.Future<PublishSongResponse> publishSong($pb.ClientContext? ctx, PublishSongRequest request) {
-    var emptyResponse = PublishSongResponse();
-    return _client.invoke<PublishSongResponse>(ctx, 'SongService', 'PublishSong', request, emptyResponse);
-  }
-  $async.Future<UpdateSongResponse> updateSong($pb.ClientContext? ctx, UpdateSongRequest request) {
-    var emptyResponse = UpdateSongResponse();
-    return _client.invoke<UpdateSongResponse>(ctx, 'SongService', 'UpdateSong', request, emptyResponse);
-  }
-  $async.Future<DeleteSongResponse> deleteSong($pb.ClientContext? ctx, DeleteSongRequest request) {
-    var emptyResponse = DeleteSongResponse();
-    return _client.invoke<DeleteSongResponse>(ctx, 'SongService', 'DeleteSong', request, emptyResponse);
-  }
-  $async.Future<GetSongResponse> getSong($pb.ClientContext? ctx, GetSongRequest request) {
-    var emptyResponse = GetSongResponse();
-    return _client.invoke<GetSongResponse>(ctx, 'SongService', 'GetSong', request, emptyResponse);
-  }
-  $async.Future<ListSongsResponse> listSongs($pb.ClientContext? ctx, ListSongsRequest request) {
-    var emptyResponse = ListSongsResponse();
-    return _client.invoke<ListSongsResponse>(ctx, 'SongService', 'ListSongs', request, emptyResponse);
-  }
-  $async.Future<SearchSongsResponse> searchSongs($pb.ClientContext? ctx, SearchSongsRequest request) {
-    var emptyResponse = SearchSongsResponse();
-    return _client.invoke<SearchSongsResponse>(ctx, 'SongService', 'SearchSongs', request, emptyResponse);
-  }
-  $async.Future<ListDeviceLocalSongsResponse> listDeviceLocalSongs($pb.ClientContext? ctx, ListDeviceLocalSongsRequest request) {
-    var emptyResponse = ListDeviceLocalSongsResponse();
-    return _client.invoke<ListDeviceLocalSongsResponse>(ctx, 'SongService', 'ListDeviceLocalSongs', request, emptyResponse);
-  }
 }
 

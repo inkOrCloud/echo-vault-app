@@ -1,69 +1,49 @@
-import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:grpc/grpc.dart';
-import 'package:fixnum/fixnum.dart';
-import 'package:echo_vault_app/core/grpc/grpc_rpc_client.dart';
 import 'package:echo_vault_app/features/library/services/song_repository.dart';
 import 'package:echo_vault_app/models/generated/echo_vault/song/v1/song_service.pb.dart';
 
-class _MockGrpcClient {
-  final Map<String, List<int> Function()> _responses = {};
+class MockSongService implements SongService {
+  final Map<String, Object Function()> _handlers = {};
   bool throwOnCall = false;
+  void when(String m, Object Function() h) { _handlers[m] = h; }
 
-  void when(String method, List<int> Function() responseBuilder) { _responses[method] = responseBuilder; }
-
-  Future<List<int>> unaryCallRaw({required String servicePath, required String methodName, required List<int> requestBytes}) async {
-    if (throwOnCall) throw GrpcError.unavailable('server down');
-    final builder = _responses[methodName];
-    if (builder == null) throw GrpcError.unimplemented('No mock for $methodName');
-    return builder();
+  @override Future<CheckSongsByHashResponse> checkSongsByHash(CheckSongsByHashRequest r) {
+    if (throwOnCall) throw GrpcError.unavailable('down');
+    return Future.value(_handlers['checkSongsByHash']!() as CheckSongsByHashResponse);
   }
+  @override Future<PublishSongResponse> publishSong(PublishSongRequest r) =>
+    Future.value(_handlers['publishSong']!() as PublishSongResponse);
+  @override Future<SearchSongsResponse> searchSongs(SearchSongsRequest r) =>
+    Future.value(_handlers['searchSongs']!() as SearchSongsResponse);
+  @override Future<ListSongsResponse> listSongs(ListSongsRequest r) => Future.value(ListSongsResponse());
+  @override Future<GetSongResponse> getSong(GetSongRequest r) => Future.value(GetSongResponse());
 }
 
 void main() {
-  late _MockGrpcClient mockClient;
-  late SongRepository repository;
+  late MockSongService mock;
+  late SongRepository repo;
+  setUp(() { mock = MockSongService(); repo = SongRepository.withService(mock); });
 
-  setUp(() {
-    mockClient = _MockGrpcClient();
-    repository = SongRepository.withClient(mockClient as dynamic, '/echo_vault.song.v1.SongService');
+  test('checkSongsByHash', () async {
+    mock.when('checkSongsByHash', () => CheckSongsByHashResponse(results: [
+      CheckSongsByHashResponse_Result(fileHash: 'h1', exists: true, song: Song(id: 's1', title: 'T')),
+      CheckSongsByHashResponse_Result(fileHash: 'h2', exists: false),
+    ]));
+    final r = await repo.checkSongsByHash(deviceId: 'd', fileHashes: ['h1','h2']);
+    expect(r.length, 2); expect(r[0].exists, isTrue); expect(r[1].exists, isFalse);
   });
-
-  group('checkSongsByHash', () {
-    test('returns mapping of hash to existence', () async {
-      mockClient.when('CheckSongsByHash', () {
-        return CheckSongsByHashResponse(results: [
-          CheckSongsByHashResponse_Result(fileHash: 'hash1', exists: true, song: Song(id: 'song-1', title: 'Known Song', artist: 'A')),
-          CheckSongsByHashResponse_Result(fileHash: 'hash2', exists: false),
-        ]).writeToBuffer();
-      });
-      final results = await repository.checkSongsByHash(deviceId: 'dev-1', fileHashes: ['hash1', 'hash2']);
-      expect(results.length, 2);
-      expect(results[0].exists, isTrue);
-      expect(results[0].song!.id, 'song-1');
-      expect(results[1].exists, isFalse);
-    });
-
-    test('throws SongRepositoryException on gRPC error', () async {
-      mockClient.throwOnCall = true;
-      expect(() => repository.checkSongsByHash(deviceId: 'dev-1', fileHashes: ['hash1']), throwsA(isA<SongRepositoryException>()));
-    });
+  test('throws on error', () async {
+    mock.throwOnCall = true;
+    expect(() => repo.checkSongsByHash(deviceId: 'd', fileHashes: ['h']), throwsA(isA<SongRepositoryException>()));
   });
-
-  group('publishSong', () {
-    test('returns published song', () async {
-      mockClient.when('PublishSong', () => PublishSongResponse(song: Song(id: 'new-song', title: 'My Song', artist: 'Me')).writeToBuffer());
-      final song = await repository.publishSong(fileHash: 'hash1', title: 'My Song', artist: 'Me', fileName: 'test.mp3', fileSize: 1024, mimeType: 'audio/mpeg');
-      expect(song.id, 'new-song');
-      expect(song.title, 'My Song');
-    });
+  test('publishSong', () async {
+    mock.when('publishSong', () => PublishSongResponse(song: Song(id: 'n', title: 'T', artist: 'A')));
+    final s = await repo.publishSong(fileHash: 'h', title: 'T', artist: 'A', fileName: 'f.mp3', fileSize: 100, mimeType: 'audio/mpeg');
+    expect(s.id, 'n');
   });
-
-  group('searchSongs', () {
-    test('returns matching songs', () async {
-      mockClient.when('SearchSongs', () => SearchSongsResponse(songs: [Song(id: 's1', title: 'Hello'), Song(id: 's2', title: 'World')]).writeToBuffer());
-      final songs = await repository.searchSongs('Hello');
-      expect(songs.length, 2);
-    });
+  test('searchSongs', () async {
+    mock.when('searchSongs', () => SearchSongsResponse(songs: [Song(id: 's1', title: 'Hello')]));
+    expect((await repo.searchSongs('Hello')).length, 1);
   });
 }

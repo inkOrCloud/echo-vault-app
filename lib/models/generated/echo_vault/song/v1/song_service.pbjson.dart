@@ -8,9 +8,6 @@
 import 'dart:core' as $core;
 import 'dart:convert' as $convert;
 import 'dart:typed_data' as $typed_data;
-import '../../../google/protobuf/timestamp.pbjson.dart' as $0;
-import '../../common/v1/types.pbjson.dart' as $1;
-
 @$core.Deprecated('Use songDescriptor instead')
 const Song$json = const {
   '1': 'Song',
@@ -236,44 +233,3 @@ const ListDeviceLocalSongsResponse$json = const {
 
 /// Descriptor for `ListDeviceLocalSongsResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List listDeviceLocalSongsResponseDescriptor = $convert.base64Decode('ChxMaXN0RGV2aWNlTG9jYWxTb25nc1Jlc3BvbnNlEi4KBXNvbmdzGAEgAygLMhguZWNob192YXVsdC5zb25nLnYxLlNvbmdSBXNvbmdz');
-const $core.Map<$core.String, $core.dynamic> SongServiceBase$json = const {
-  '1': 'SongService',
-  '2': const [
-    const {'1': 'CheckSongsByHash', '2': '.echo_vault.song.v1.CheckSongsByHashRequest', '3': '.echo_vault.song.v1.CheckSongsByHashResponse'},
-    const {'1': 'PublishSong', '2': '.echo_vault.song.v1.PublishSongRequest', '3': '.echo_vault.song.v1.PublishSongResponse'},
-    const {'1': 'UpdateSong', '2': '.echo_vault.song.v1.UpdateSongRequest', '3': '.echo_vault.song.v1.UpdateSongResponse'},
-    const {'1': 'DeleteSong', '2': '.echo_vault.song.v1.DeleteSongRequest', '3': '.echo_vault.song.v1.DeleteSongResponse'},
-    const {'1': 'GetSong', '2': '.echo_vault.song.v1.GetSongRequest', '3': '.echo_vault.song.v1.GetSongResponse'},
-    const {'1': 'ListSongs', '2': '.echo_vault.song.v1.ListSongsRequest', '3': '.echo_vault.song.v1.ListSongsResponse'},
-    const {'1': 'SearchSongs', '2': '.echo_vault.song.v1.SearchSongsRequest', '3': '.echo_vault.song.v1.SearchSongsResponse'},
-    const {'1': 'ListDeviceLocalSongs', '2': '.echo_vault.song.v1.ListDeviceLocalSongsRequest', '3': '.echo_vault.song.v1.ListDeviceLocalSongsResponse'},
-  ],
-};
-
-@$core.Deprecated('Use songServiceDescriptor instead')
-const $core.Map<$core.String, $core.Map<$core.String, $core.dynamic>> SongServiceBase$messageJson = const {
-  '.echo_vault.song.v1.CheckSongsByHashRequest': CheckSongsByHashRequest$json,
-  '.echo_vault.song.v1.CheckSongsByHashResponse': CheckSongsByHashResponse$json,
-  '.echo_vault.song.v1.CheckSongsByHashResponse.Result': CheckSongsByHashResponse_Result$json,
-  '.echo_vault.song.v1.Song': Song$json,
-  '.google.protobuf.Timestamp': $0.Timestamp$json,
-  '.echo_vault.song.v1.PublishSongRequest': PublishSongRequest$json,
-  '.echo_vault.song.v1.PublishSongResponse': PublishSongResponse$json,
-  '.echo_vault.song.v1.UpdateSongRequest': UpdateSongRequest$json,
-  '.echo_vault.song.v1.UpdateSongResponse': UpdateSongResponse$json,
-  '.echo_vault.song.v1.DeleteSongRequest': DeleteSongRequest$json,
-  '.echo_vault.song.v1.DeleteSongResponse': DeleteSongResponse$json,
-  '.echo_vault.song.v1.GetSongRequest': GetSongRequest$json,
-  '.echo_vault.song.v1.GetSongResponse': GetSongResponse$json,
-  '.echo_vault.song.v1.ListSongsRequest': ListSongsRequest$json,
-  '.echo_vault.common.v1.PaginationRequest': $1.PaginationRequest$json,
-  '.echo_vault.song.v1.ListSongsResponse': ListSongsResponse$json,
-  '.echo_vault.common.v1.PaginationResponse': $1.PaginationResponse$json,
-  '.echo_vault.song.v1.SearchSongsRequest': SearchSongsRequest$json,
-  '.echo_vault.song.v1.SearchSongsResponse': SearchSongsResponse$json,
-  '.echo_vault.song.v1.ListDeviceLocalSongsRequest': ListDeviceLocalSongsRequest$json,
-  '.echo_vault.song.v1.ListDeviceLocalSongsResponse': ListDeviceLocalSongsResponse$json,
-};
-
-/// Descriptor for `SongService`. Decode as a `google.protobuf.ServiceDescriptorProto`.
-final $typed_data.Uint8List songServiceDescriptor = $convert.base64Decode('CgtTb25nU2VydmljZRJtChBDaGVja1NvbmdzQnlIYXNoEisuZWNob192YXVsdC5zb25nLnYxLkNoZWNrU29uZ3NCeUhhc2hSZXF1ZXN0GiwuZWNob192YXVsdC5zb25nLnYxLkNoZWNrU29uZ3NCeUhhc2hSZXNwb25zZRJeCgtQdWJsaXNoU29uZxImLmVjaG9fdmF1bHQuc29uZy52MS5QdWJsaXNoU29uZ1JlcXVlc3QaJy5lY2hvX3ZhdWx0LnNvbmcudjEuUHVibGlzaFNvbmdSZXNwb25zZRJbCgpVcGRhdGVTb25nEiUuZWNob192YXVsdC5zb25nLnYxLlVwZGF0ZVNvbmdSZXF1ZXN0GiYuZWNob192YXVsdC5zb25nLnYxLlVwZGF0ZVNvbmdSZXNwb25zZRJbCgpEZWxldGVTb25nEiUuZWNob192YXVsdC5zb25nLnYxLkRlbGV0ZVNvbmdSZXF1ZXN0GiYuZWNob192YXVsdC5zb25nLnYxLkRlbGV0ZVNvbmdSZXNwb25zZRJSCgdHZXRTb25nEiIuZWNob192YXVsdC5zb25nLnYxLkdldFNvbmdSZXF1ZXN0GiMuZWNob192YXVsdC5zb25nLnYxLkdldFNvbmdSZXNwb25zZRJYCglMaXN0U29uZ3MSJC5lY2hvX3ZhdWx0LnNvbmcudjEuTGlzdFNvbmdzUmVxdWVzdBolLmVjaG9fdmF1bHQuc29uZy52MS5MaXN0U29uZ3NSZXNwb25zZRJeCgtTZWFyY2hTb25ncxImLmVjaG9fdmF1bHQuc29uZy52MS5TZWFyY2hTb25nc1JlcXVlc3QaJy5lY2hvX3ZhdWx0LnNvbmcudjEuU2VhcmNoU29uZ3NSZXNwb25zZRJ5ChRMaXN0RGV2aWNlTG9jYWxTb25ncxIvLmVjaG9fdmF1bHQuc29uZy52MS5MaXN0RGV2aWNlTG9jYWxTb25nc1JlcXVlc3QaMC5lY2hvX3ZhdWx0LnNvbmcudjEuTGlzdERldmljZUxvY2FsU29uZ3NSZXNwb25zZQ==');
