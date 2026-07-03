@@ -40,9 +40,13 @@ class _DeviceListPageState extends ConsumerState<DeviceListPage> {
     try {
       final repository = ref.read(deviceRepositoryProvider);
       final devices = await repository.listDevices();
-      notifier.setDevices(devices);
+      if (mounted) {
+        notifier.setDevices(devices);
+      }
     } catch (e) {
-      notifier.setError(e.toString());
+      if (mounted) {
+        notifier.setError(e.toString());
+      }
     }
   }
 
@@ -57,7 +61,7 @@ class _DeviceListPageState extends ConsumerState<DeviceListPage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
-            onPressed: () => _registerCurrentDevice(context),
+            onPressed: () => _registerCurrentDevice(),
           ),
         ],
       ),
@@ -120,12 +124,13 @@ class _DeviceListPageState extends ConsumerState<DeviceListPage> {
     }
   }
 
-  Future<void> _registerCurrentDevice(BuildContext context) async {
+  Future<void> _registerCurrentDevice() async {
     final currentDeviceId = ref.read(currentDeviceIdProvider);
     
-    // 获取设备信息
     final deviceName = await _getDeviceName();
     final platform = _getPlatform();
+    
+    if (!mounted) return;
     
     try {
       final repository = ref.read(deviceRepositoryProvider);
@@ -136,11 +141,11 @@ class _DeviceListPageState extends ConsumerState<DeviceListPage> {
         osVersion: await _getOsVersion(),
         clientVersion: '1.0.0',
       );
-      ref.read(deviceListProvider.notifier).setDevices(
-        [...ref.read(deviceListProvider).devices, device],
-      );
-      
       if (mounted) {
+        ref.read(deviceListProvider.notifier).setDevices(
+          [...ref.read(deviceListProvider).devices, device],
+        );
+        
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('设备注册成功')),
         );
@@ -169,28 +174,30 @@ class _DeviceListPageState extends ConsumerState<DeviceListPage> {
   Future<void> _removeDevice(String deviceId) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text('确认移除'),
         content: const Text('确定要移除这个设备吗？'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
+            onPressed: () => Navigator.pop(dialogContext, false),
             child: const Text('取消'),
           ),
           FilledButton(
-            onPressed: () => Navigator.pop(context, true),
+            onPressed: () => Navigator.pop(dialogContext, true),
             child: const Text('移除'),
           ),
         ],
       ),
     );
     
-    if (confirmed != true) return;
+    if (confirmed != true || !mounted) return;
     
     try {
       final repository = ref.read(deviceRepositoryProvider);
       await repository.removeDevice(deviceId);
-      ref.read(deviceListProvider.notifier).removeDevice(deviceId);
+      if (mounted) {
+        ref.read(deviceListProvider.notifier).removeDevice(deviceId);
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

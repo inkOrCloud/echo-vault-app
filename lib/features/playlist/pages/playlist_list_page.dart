@@ -24,7 +24,6 @@ class _PlaylistListPageState extends ConsumerState<PlaylistListPage> {
   @override
   void initState() {
     super.initState();
-    // 延迟加载，等待帧渲染完成
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadPlaylists();
     });
@@ -36,9 +35,13 @@ class _PlaylistListPageState extends ConsumerState<PlaylistListPage> {
     try {
       final repository = ref.read(playlistRepositoryProvider);
       final playlists = await repository.listPlaylists();
-      notifier.setPlaylists(playlists);
+      if (mounted) {
+        notifier.setPlaylists(playlists);
+      }
     } catch (e) {
-      notifier.setError(e.toString());
+      if (mounted) {
+        notifier.setError(e.toString());
+      }
     }
   }
 
@@ -52,7 +55,7 @@ class _PlaylistListPageState extends ConsumerState<PlaylistListPage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
-            onPressed: () => _showCreateDialog(context),
+            onPressed: () => _showCreateDialog(),
           ),
         ],
       ),
@@ -115,11 +118,11 @@ class _PlaylistListPageState extends ConsumerState<PlaylistListPage> {
     }
   }
 
-  void _showCreateDialog(BuildContext context) {
+  void _showCreateDialog() {
     final nameController = TextEditingController();
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text('创建歌单'),
         content: TextField(
           controller: nameController,
@@ -128,15 +131,15 @@ class _PlaylistListPageState extends ConsumerState<PlaylistListPage> {
             border: OutlineInputBorder(),
           ),
           autofocus: true,
-          onSubmitted: (_) => _createPlaylist(context, nameController),
+          onSubmitted: (_) => _createPlaylist(nameController),
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text('取消'),
           ),
           FilledButton(
-            onPressed: () => _createPlaylist(context, nameController),
+            onPressed: () => _createPlaylist(nameController),
             child: const Text('创建'),
           ),
         ],
@@ -144,7 +147,7 @@ class _PlaylistListPageState extends ConsumerState<PlaylistListPage> {
     );
   }
 
-  Future<void> _createPlaylist(BuildContext context, TextEditingController controller) async {
+  Future<void> _createPlaylist(TextEditingController controller) async {
     final name = controller.text.trim();
     if (name.isEmpty) return;
     
@@ -153,7 +156,9 @@ class _PlaylistListPageState extends ConsumerState<PlaylistListPage> {
     try {
       final repository = ref.read(playlistRepositoryProvider);
       final playlist = await repository.createPlaylist(name: name);
-      ref.read(playlistListProvider.notifier).addPlaylist(playlist);
+      if (mounted) {
+        ref.read(playlistListProvider.notifier).addPlaylist(playlist);
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -166,16 +171,16 @@ class _PlaylistListPageState extends ConsumerState<PlaylistListPage> {
   Future<void> _deletePlaylist(String id) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text('确认删除'),
         content: const Text('确定要删除这个歌单吗？'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
+            onPressed: () => Navigator.pop(dialogContext, false),
             child: const Text('取消'),
           ),
           FilledButton(
-            onPressed: () => Navigator.pop(context, true),
+            onPressed: () => Navigator.pop(dialogContext, true),
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
             child: const Text('删除'),
           ),
@@ -183,12 +188,14 @@ class _PlaylistListPageState extends ConsumerState<PlaylistListPage> {
       ),
     );
     
-    if (confirmed != true) return;
+    if (confirmed != true || !mounted) return;
     
     try {
       final repository = ref.read(playlistRepositoryProvider);
       await repository.deletePlaylist(id);
-      ref.read(playlistListProvider.notifier).removePlaylist(id);
+      if (mounted) {
+        ref.read(playlistListProvider.notifier).removePlaylist(id);
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

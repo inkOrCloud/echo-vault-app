@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-// Removed unused import
 import 'package:echo_vault_app/features/playlist/services/playlist_repository.dart';
 import 'package:echo_vault_app/models/generated/echo_vault/playlist/v1/playlist_service.pb.dart';
 import 'package:echo_vault_app/models/generated/echo_vault/song/v1/song_service.pb.dart';
@@ -73,13 +72,13 @@ class _PlaylistDetailPageState extends ConsumerState<PlaylistDetailPage> {
           if (_playlist != null)
             IconButton(
               icon: const Icon(Icons.edit),
-              onPressed: () => _showEditDialog(context),
+              onPressed: () => _showEditDialog(),
             ),
         ],
       ),
       body: _buildBody(),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _showAddSongDialog(context),
+        onPressed: () => _showAddSongDialog(),
         child: const Icon(Icons.add),
       ),
     );
@@ -159,13 +158,13 @@ class _PlaylistDetailPageState extends ConsumerState<PlaylistDetailPage> {
     );
   }
 
-  void _showEditDialog(BuildContext context) {
+  void _showEditDialog() {
     final nameController = TextEditingController(text: _playlist?.name ?? '');
     final descController = TextEditingController(text: _playlist?.description ?? '');
     
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text('编辑歌单'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -190,11 +189,11 @@ class _PlaylistDetailPageState extends ConsumerState<PlaylistDetailPage> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text('取消'),
           ),
           FilledButton(
-            onPressed: () => _updatePlaylist(context, nameController, descController),
+            onPressed: () => _updatePlaylist(nameController, descController),
             child: const Text('保存'),
           ),
         ],
@@ -203,7 +202,6 @@ class _PlaylistDetailPageState extends ConsumerState<PlaylistDetailPage> {
   }
 
   Future<void> _updatePlaylist(
-    BuildContext context,
     TextEditingController nameController,
     TextEditingController descController,
   ) async {
@@ -219,7 +217,9 @@ class _PlaylistDetailPageState extends ConsumerState<PlaylistDetailPage> {
         name: name,
         description: descController.text.trim(),
       );
-      setState(() => _playlist = updated);
+      if (mounted) {
+        setState(() => _playlist = updated);
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -229,7 +229,7 @@ class _PlaylistDetailPageState extends ConsumerState<PlaylistDetailPage> {
     }
   }
 
-  void _showAddSongDialog(BuildContext context) {
+  void _showAddSongDialog() {
     final libraryState = ref.read(libraryProvider);
     final allSongs = libraryState.songs;
     
@@ -246,7 +246,7 @@ class _PlaylistDetailPageState extends ConsumerState<PlaylistDetailPage> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      builder: (context) => DraggableScrollableSheet(
+      builder: (sheetContext) => DraggableScrollableSheet(
         initialChildSize: 0.7,
         minChildSize: 0.5,
         maxChildSize: 0.9,
@@ -261,7 +261,7 @@ class _PlaylistDetailPageState extends ConsumerState<PlaylistDetailPage> {
                   const Text('添加歌曲', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   IconButton(
                     icon: const Icon(Icons.close),
-                    onPressed: () => Navigator.pop(context),
+                    onPressed: () => Navigator.pop(sheetContext),
                   ),
                 ],
               ),
@@ -277,7 +277,7 @@ class _PlaylistDetailPageState extends ConsumerState<PlaylistDetailPage> {
                     title: Text(song.title.isNotEmpty ? song.title : '未知标题'),
                     subtitle: Text(song.artist.isNotEmpty ? song.artist : '未知艺术家'),
                     trailing: const Icon(Icons.add_circle_outline),
-                    onTap: () => _addSong(context, song.id),
+                    onTap: () => _addSong(song.id),
                   );
                 },
               ),
@@ -288,7 +288,7 @@ class _PlaylistDetailPageState extends ConsumerState<PlaylistDetailPage> {
     );
   }
 
-  Future<void> _addSong(BuildContext context, String songId) async {
+  Future<void> _addSong(String songId) async {
     Navigator.pop(context);
     
     try {
@@ -297,7 +297,9 @@ class _PlaylistDetailPageState extends ConsumerState<PlaylistDetailPage> {
         playlistId: widget.playlistId,
         songId: songId,
       );
-      await _loadPlaylist();
+      if (mounted) {
+        await _loadPlaylist();
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -321,10 +323,12 @@ class _PlaylistDetailPageState extends ConsumerState<PlaylistDetailPage> {
         songIds: songIds,
       );
       
-      setState(() {
-        final movedItem = _songs.removeAt(oldIndex);
-        _songs.insert(newIndex, movedItem);
-      });
+      if (mounted) {
+        setState(() {
+          final movedItem = _songs.removeAt(oldIndex);
+          _songs.insert(newIndex, movedItem);
+        });
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -338,23 +342,23 @@ class _PlaylistDetailPageState extends ConsumerState<PlaylistDetailPage> {
   void _removeSong(String songId) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text('确认移除'),
         content: const Text('确定要从歌单中移除这首歌吗？'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
+            onPressed: () => Navigator.pop(dialogContext, false),
             child: const Text('取消'),
           ),
           FilledButton(
-            onPressed: () => Navigator.pop(context, true),
+            onPressed: () => Navigator.pop(dialogContext, true),
             child: const Text('移除'),
           ),
         ],
       ),
     );
     
-    if (confirmed != true) return;
+    if (confirmed != true || !mounted) return;
     
     try {
       final repository = ref.read(playlistRepositoryProvider);
@@ -362,7 +366,9 @@ class _PlaylistDetailPageState extends ConsumerState<PlaylistDetailPage> {
         playlistId: widget.playlistId,
         songId: songId,
       );
-      await _loadPlaylist();
+      if (mounted) {
+        await _loadPlaylist();
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
