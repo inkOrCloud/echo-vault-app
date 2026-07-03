@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:echo_vault_app/features/auth/login_page.dart';
@@ -7,6 +8,7 @@ import 'package:echo_vault_app/features/library/pages/library_page.dart';
 import 'package:echo_vault_app/features/publish/pages/scan_result_page.dart';
 import 'package:echo_vault_app/features/publish/pages/edit_metadata_page.dart';
 import 'package:echo_vault_app/features/player/pages/player_page.dart';
+import 'package:echo_vault_app/features/playlist/pages/playlist_list_page.dart';
 import 'package:echo_vault_app/features/library/models/scanned_file.dart';
 import 'package:echo_vault_app/providers/auth_provider.dart';
 import 'package:echo_vault_app/providers/server_provider.dart';
@@ -43,6 +45,18 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
       ),
       GoRoute(path: '/player', builder: (_, __) => const PlayerPage()),
+      GoRoute(
+        path: '/playlist',
+        builder: (_, __) => const PlaylistListPage(),
+        routes: [
+          GoRoute(
+            path: ':id',
+            builder: (_, __) => const Scaffold(
+              body: Center(child: Text('歌单详情页 - 待实现')),
+            ),
+          ),
+        ],
+      ),
     ],
   );
 });
