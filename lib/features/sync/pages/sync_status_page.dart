@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:echo_vault_app/features/sync/providers/sync_provider.dart';
 import 'package:echo_vault_app/features/sync/widgets/sync_status_indicator.dart';
 import 'package:echo_vault_app/main.dart' show AppDrawer;
@@ -16,15 +17,42 @@ class _SyncStatusPageState extends ConsumerState<SyncStatusPage> {
   @override
   void initState() {
     super.initState();
-    // 初始化时检查同步状态
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkSyncStatus();
     });
   }
 
   Future<void> _checkSyncStatus() async {
-    // TODO: 从本地存储获取上次同步时间和待同步变更数
-    // 暂时设置默认值
+    final prefs = await SharedPreferences.getInstance();
+    
+    // 从本地存储获取上次同步时间
+    final lastSyncTimestamp = prefs.getInt('last_sync_time');
+    DateTime? lastSyncTime;
+    if (lastSyncTimestamp != null) {
+      lastSyncTime = DateTime.fromMillisecondsSinceEpoch(lastSyncTimestamp);
+    }
+    
+    // 获取待同步变更数
+    final pendingChanges = prefs.getInt('pending_sync_changes') ?? 0;
+    
+    // 恢复同步状态
+    ref.read(syncProvider.notifier).restoreFromStorage(
+      lastSyncTime: lastSyncTime,
+      pendingChanges: pendingChanges,
+    );
+  }
+
+  Future<void> _saveSyncStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    final state = ref.read(syncProvider);
+    
+    // 保存上次同步时间
+    if (state.lastSyncTime != null) {
+      await prefs.setInt('last_sync_time', state.lastSyncTime!.millisecondsSinceEpoch);
+    }
+    
+    // 保存待同步变更数
+    await prefs.setInt('pending_sync_changes', state.pendingChanges);
   }
 
   @override
@@ -180,6 +208,9 @@ class _SyncStatusPageState extends ConsumerState<SyncStatusPage> {
       }
       
       notifier.setCompleted();
+      
+      // 保存同步状态到本地存储
+      await _saveSyncStatus();
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

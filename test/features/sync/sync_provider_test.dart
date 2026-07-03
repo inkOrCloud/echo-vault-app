@@ -84,6 +84,34 @@ void main() {
       expect(c.read(syncProvider).status, SyncStatus.syncing); // 状态不变
     });
 
+    test('restoreFromStorage 恢复同步状态', () {
+      final c = ProviderContainer();
+      addTearDown(c.dispose);
+      final notifier = c.read(syncProvider.notifier);
+      
+      // 恢复有上次同步时间的状态
+      final lastSync = DateTime(2024, 1, 15, 10, 30);
+      notifier.restoreFromStorage(
+        lastSyncTime: lastSync,
+        pendingChanges: 5,
+      );
+      
+      expect(c.read(syncProvider).status, SyncStatus.completed);
+      expect(c.read(syncProvider).lastSyncTime, lastSync);
+      expect(c.read(syncProvider).pendingChanges, 5);
+    });
+
+    test('restoreFromStorage 无同步历史时为 idle', () {
+      final c = ProviderContainer();
+      addTearDown(c.dispose);
+      final notifier = c.read(syncProvider.notifier);
+      
+      notifier.restoreFromStorage();
+      
+      expect(c.read(syncProvider).status, SyncStatus.idle);
+      expect(c.read(syncProvider).lastSyncTime, isNull);
+    });
+
     test('同步流程：idle -> syncing -> completed', () {
       final c = ProviderContainer();
       addTearDown(c.dispose);

@@ -27,6 +27,7 @@ class SyncNotifier extends StateNotifier<SyncState> {
   SyncNotifier() : super(const SyncState());
 
   void setIdle() => state = const SyncState();
+  
   void setSyncing({int pending = 0, int synced = 0}) {
     state = SyncState(
       status: SyncStatus.syncing,
@@ -35,12 +36,14 @@ class SyncNotifier extends StateNotifier<SyncState> {
       lastSyncTime: state.lastSyncTime,
     );
   }
+  
   void setCompleted() {
     state = SyncState(
       status: SyncStatus.completed,
       lastSyncTime: DateTime.now(),
     );
   }
+  
   void setError(String message) {
     state = SyncState(
       status: SyncStatus.error,
@@ -48,11 +51,21 @@ class SyncNotifier extends StateNotifier<SyncState> {
       lastSyncTime: state.lastSyncTime,
     );
   }
+  
   void setPendingChanges(int count) {
     state = SyncState(
       status: state.status,
       pendingChanges: count,
       lastSyncTime: state.lastSyncTime,
+    );
+  }
+  
+  // 从本地存储恢复同步状态
+  void restoreFromStorage({DateTime? lastSyncTime, int pendingChanges = 0}) {
+    state = SyncState(
+      status: lastSyncTime != null ? SyncStatus.completed : SyncStatus.idle,
+      pendingChanges: pendingChanges,
+      lastSyncTime: lastSyncTime,
     );
   }
 }
