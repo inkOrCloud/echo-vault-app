@@ -1,5 +1,4 @@
 // lib/features/device/services/device_repository.dart
-import 'package:echo_vault_app/models/generated/echo_vault/user/v1/user_service.pb.dart';
 import 'package:echo_vault_app/models/generated/echo_vault/user/v1/user_service.pbgrpc.dart';
 import 'package:echo_vault_app/core/grpc/client.dart';
 
