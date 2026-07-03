@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:echo_vault_app/features/sync/providers/sync_provider.dart';
 import 'package:echo_vault_app/features/sync/widgets/sync_status_indicator.dart';
+import 'package:echo_vault_app/main.dart' show AppDrawer;
 import 'package:intl/intl.dart';
 
 class SyncStatusPage extends ConsumerWidget {
@@ -22,6 +23,7 @@ class SyncStatusPage extends ConsumerWidget {
           ),
         ],
       ),
+      drawer: const AppDrawer(),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [

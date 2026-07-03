@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:echo_vault_app/features/device/providers/device_provider.dart';
 import 'package:echo_vault_app/features/device/widgets/device_tile.dart';
+import 'package:echo_vault_app/main.dart' show AppDrawer;
 
 class DeviceListPage extends ConsumerStatefulWidget {
   const DeviceListPage({super.key});
@@ -24,6 +25,7 @@ class _DeviceListPageState extends ConsumerState<DeviceListPage> {
 
     return Scaffold(
       appBar: AppBar(title: const Text('设备管理')),
+      drawer: const AppDrawer(),
       body: _buildBody(state),
     );
   }
