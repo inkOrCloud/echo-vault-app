@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:echo_vault_app/features/auth/login_page.dart';
@@ -9,6 +8,9 @@ import 'package:echo_vault_app/features/publish/pages/scan_result_page.dart';
 import 'package:echo_vault_app/features/publish/pages/edit_metadata_page.dart';
 import 'package:echo_vault_app/features/player/pages/player_page.dart';
 import 'package:echo_vault_app/features/playlist/pages/playlist_list_page.dart';
+import 'package:echo_vault_app/features/playlist/pages/playlist_detail_page.dart';
+import 'package:echo_vault_app/features/device/pages/device_list_page.dart';
+import 'package:echo_vault_app/features/sync/pages/sync_status_page.dart';
 import 'package:echo_vault_app/features/library/models/scanned_file.dart';
 import 'package:echo_vault_app/providers/auth_provider.dart';
 import 'package:echo_vault_app/providers/server_provider.dart';
@@ -51,12 +53,15 @@ final routerProvider = Provider<GoRouter>((ref) {
         routes: [
           GoRoute(
             path: ':id',
-            builder: (_, __) => const Scaffold(
-              body: Center(child: Text('歌单详情页 - 待实现')),
-            ),
+            builder: (_, state) {
+              final id = state.pathParameters['id']!;
+              return PlaylistDetailPage(playlistId: id);
+            },
           ),
         ],
       ),
+      GoRoute(path: '/devices', builder: (_, __) => const DeviceListPage()),
+      GoRoute(path: '/sync', builder: (_, __) => const SyncStatusPage()),
     ],
   );
 });
