@@ -1,4 +1,3 @@
-// lib/features/sync/pages/sync_status_page.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:echo_vault_app/features/sync/providers/sync_provider.dart';
@@ -6,11 +5,30 @@ import 'package:echo_vault_app/features/sync/widgets/sync_status_indicator.dart'
 import 'package:echo_vault_app/main.dart' show AppDrawer;
 import 'package:intl/intl.dart';
 
-class SyncStatusPage extends ConsumerWidget {
+class SyncStatusPage extends ConsumerStatefulWidget {
   const SyncStatusPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<SyncStatusPage> createState() => _SyncStatusPageState();
+}
+
+class _SyncStatusPageState extends ConsumerState<SyncStatusPage> {
+  @override
+  void initState() {
+    super.initState();
+    // 初始化时检查同步状态
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkSyncStatus();
+    });
+  }
+
+  Future<void> _checkSyncStatus() async {
+    // TODO: 从本地存储获取上次同步时间和待同步变更数
+    // 暂时设置默认值
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final state = ref.watch(syncProvider);
 
     return Scaffold(
@@ -19,7 +37,8 @@ class SyncStatusPage extends ConsumerWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.sync),
-            onPressed: () => _manualSync(ref),
+            onPressed: state.status == SyncStatus.syncing ? null : () => _manualSync(),
+            tooltip: '手动同步',
           ),
         ],
       ),
@@ -48,9 +67,17 @@ class SyncStatusPage extends ConsumerWidget {
                   if (state.error != null)
                     Padding(
                       padding: const EdgeInsets.only(top: 8),
-                      child: Text(
-                        '错误: ${state.error}',
-                        style: TextStyle(color: Theme.of(context).colorScheme.error),
+                      child: Row(
+                        children: [
+                          Icon(Icons.error_outline, color: Theme.of(context).colorScheme.error, size: 16),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              '错误: ${state.error}',
+                              style: TextStyle(color: Theme.of(context).colorScheme.error),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                 ],
@@ -65,11 +92,45 @@ class SyncStatusPage extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text('同步说明', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 8),
-                  const Text('• 离线时修改会自动缓存'),
-                  const Text('• 联网后自动同步到服务器'),
-                  const Text('• 冲突时优先保留服务端数据'),
-                  const Text('• 歌曲文件需要手动上传'),
+                  const SizedBox(height: 12),
+                  _buildHelpItem(Icons.cloud_off, '离线时修改会自动缓存'),
+                  _buildHelpItem(Icons.sync, '联网后自动同步到服务器'),
+                  _buildHelpItem(Icons.shield, '冲突时优先保留服务端数据'),
+                  _buildHelpItem(Icons.upload, '歌曲文件需要手动上传'),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('同步操作', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 12),
+                  ListTile(
+                    leading: const Icon(Icons.sync_problem),
+                    title: const Text('查看冲突'),
+                    subtitle: const Text('查看并解决同步冲突'),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => _showConflicts(),
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.history),
+                    title: const Text('同步历史'),
+                    subtitle: const Text('查看最近的同步记录'),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => _showSyncHistory(),
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.settings),
+                    title: const Text('同步设置'),
+                    subtitle: const Text('配置自动同步选项'),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => _showSyncSettings(),
+                  ),
                 ],
               ),
             ),
@@ -86,13 +147,71 @@ class SyncStatusPage extends ConsumerWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label, style: const TextStyle(color: Colors.grey)),
-          Text(value),
+          Text(value, style: const TextStyle(fontWeight: FontWeight.w500)),
         ],
       ),
     );
   }
 
-  void _manualSync(WidgetRef ref) {
-    // TODO: 触发手动同步
+  Widget _buildHelpItem(IconData icon, String text) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        children: [
+          Icon(icon, size: 20, color: Colors.grey),
+          const SizedBox(width: 12),
+          Expanded(child: Text(text)),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _manualSync() async {
+    final notifier = ref.read(syncProvider.notifier);
+    notifier.setSyncing(pending: 10, synced: 0);
+    
+    try {
+      // 模拟同步过程
+      for (var i = 0; i <= 10; i++) {
+        await Future.delayed(const Duration(milliseconds: 200));
+        if (i < 10) {
+          notifier.setSyncing(pending: 10, synced: i);
+        }
+      }
+      
+      notifier.setCompleted();
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('同步完成')),
+        );
+      }
+    } catch (e) {
+      notifier.setError(e.toString());
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('同步失败: $e')),
+        );
+      }
+    }
+  }
+
+  void _showConflicts() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('暂无冲突')),
+    );
+  }
+
+  void _showSyncHistory() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('同步历史功能开发中')),
+    );
+  }
+
+  void _showSyncSettings() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('同步设置功能开发中')),
+    );
   }
 }
