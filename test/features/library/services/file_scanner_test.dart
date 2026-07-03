@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:echo_vault_app/features/library/models/scanned_file.dart';
 import 'package:echo_vault_app/features/library/services/file_scanner.dart';
 
 Future<String> _createTestDirectory({
@@ -48,7 +47,7 @@ void main() {
       audioFiles: ['hash_test.mp3'],
       nonAudioFiles: [],
     );
-    final file = File('${testDir}/hash_test.mp3');
+    final file = File('$testDir/hash_test.mp3');
     await file.writeAsString('test content for hashing');
     final scanner = FileScanner();
     final results = await scanner.scanDirectory(testDir);
