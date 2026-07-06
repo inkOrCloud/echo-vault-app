@@ -29,10 +29,6 @@ class PlaylistTile extends StatelessWidget {
           color: theme.colorScheme.outline,
         ),
       ),
-      trailing: IconButton(
-        icon: const Icon(Icons.more_vert),
-        onPressed: () => _showOptions(context),
-      ),
       onTap: onTap,
       onLongPress: onLongPress,
     );
@@ -65,35 +61,6 @@ class PlaylistTile extends StatelessWidget {
       child: Icon(
         Icons.music_note,
         color: theme.colorScheme.onPrimaryContainer,
-      ),
-    );
-  }
-
-  void _showOptions(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.edit),
-              title: const Text('编辑歌单'),
-              onTap: () {
-                Navigator.pop(context);
-                // TODO: Implement edit
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.delete, color: Colors.red),
-              title: const Text('删除歌单', style: TextStyle(color: Colors.red)),
-              onTap: () {
-                Navigator.pop(context);
-                // TODO: Implement delete
-              },
-            ),
-          ],
-        ),
       ),
     );
   }

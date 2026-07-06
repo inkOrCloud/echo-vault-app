@@ -75,9 +75,44 @@ class _PlaylistListPageState extends ConsumerState<PlaylistListPage> {
           child: ListView.separated(
             itemCount: playlists.length,
             separatorBuilder: (_, __) => const Divider(height: 1),
-            itemBuilder: (_, i) => PlaylistTile(
-              playlist: playlists[i],
-              onTap: () => Navigator.pushNamed(context, '/playlist/${playlists[i].id}'),
+            itemBuilder: (_, i) => Dismissible(
+              key: ValueKey(playlists[i].id),
+              direction: DismissDirection.endToStart,
+              background: Container(
+                alignment: Alignment.centerRight,
+                padding: const EdgeInsets.only(right: 16),
+                color: Colors.red,
+                child: const Icon(Icons.delete, color: Colors.white),
+              ),
+              confirmDismiss: (direction) async {
+                return await showDialog<bool>(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('删除歌单'),
+                    content: Text('确定要删除"${playlists[i].name}"吗？'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, false),
+                        child: const Text('取消'),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, true),
+                        child: const Text('删除', style: TextStyle(color: Colors.red)),
+                      ),
+                    ],
+                  ),
+                );
+              },
+              onDismissed: (_) {
+                ref.read(playlistProvider.notifier).deletePlaylist(playlists[i].id);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('已删除"${playlists[i].name}"')),
+                );
+              },
+              child: PlaylistTile(
+                playlist: playlists[i],
+                onTap: () => Navigator.pushNamed(context, '/playlist/${playlists[i].id}'),
+              ),
             ),
           ),
         );
