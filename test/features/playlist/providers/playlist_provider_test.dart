@@ -55,6 +55,8 @@ class MockPlaylistRepository implements PlaylistRepository {
 
   @override
   Future<void> reorderSongs({required String playlistId, required List<String> songIds}) async => throw UnimplementedError();
+  @override
+  Future<List<PlaylistSong>> listPlaylistSongs({required String playlistId, int pageSize = 100}) async => throw UnimplementedError();
 }
 
 void main() {

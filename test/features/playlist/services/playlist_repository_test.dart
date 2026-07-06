@@ -40,6 +40,10 @@ class MockPlaylistService implements PlaylistService {
     if (throwOnCall) throw GrpcError.unavailable('down');
     return Future.value(_handlers['reorderSongs']!() as ReorderSongsResponse);
   }
+  @override Future<ListPlaylistSongsResponse> listPlaylistSongs(ListPlaylistSongsRequest r) {
+    if (throwOnCall) throw GrpcError.unavailable('down');
+    return Future.value(_handlers['listPlaylistSongs']!() as ListPlaylistSongsResponse);
+  }
 }
 
 void main() {
@@ -106,6 +110,15 @@ void main() {
   test('reorderSongs', () async {
     mock.when('reorderSongs', () => ReorderSongsResponse());
     await repo.reorderSongs(playlistId: 'p1', songIds: ['s1', 's2', 's3']);
+  });
+
+  test('listPlaylistSongs', () async {
+    mock.when('listPlaylistSongs', () => ListPlaylistSongsResponse(songs: [
+      PlaylistSong(playlistId: 'p1', songId: 's1', position: 0),
+      PlaylistSong(playlistId: 'p1', songId: 's2', position: 1),
+    ]));
+    final songs = await repo.listPlaylistSongs(playlistId: 'p1');
+    expect(songs.length, 2);
   });
 
   test('updatePlaylist throws on error', () async {

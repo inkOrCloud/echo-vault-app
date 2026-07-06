@@ -14,6 +14,7 @@ abstract class PlaylistService {
   Future<AddSongResponse> addSong(AddSongRequest request);
   Future<RemoveSongResponse> removeSong(RemoveSongRequest request);
   Future<ReorderSongsResponse> reorderSongs(ReorderSongsRequest request);
+  Future<ListPlaylistSongsResponse> listPlaylistSongs(ListPlaylistSongsRequest request);
 }
 
 /// 生产实现 — 直接使用生成的 PlaylistServiceClient
@@ -29,6 +30,7 @@ class ChannelPlaylistService implements PlaylistService {
   @override Future<AddSongResponse> addSong(AddSongRequest r) => _client.addSong(r);
   @override Future<RemoveSongResponse> removeSong(RemoveSongRequest r) => _client.removeSong(r);
   @override Future<ReorderSongsResponse> reorderSongs(ReorderSongsRequest r) => _client.reorderSongs(r);
+  @override Future<ListPlaylistSongsResponse> listPlaylistSongs(ListPlaylistSongsRequest r) => _client.listPlaylistSongs(r);
 }
 
 class PlaylistRepositoryException implements Exception {
@@ -128,6 +130,19 @@ class PlaylistRepository {
         playlistId: playlistId,
         songIds: songIds,
       ));
+    } on GrpcError catch (e) { throw PlaylistRepositoryException(e.message ?? '', grpcCode: e.code); }
+  }
+
+  Future<List<PlaylistSong>> listPlaylistSongs({
+    required String playlistId,
+    int pageSize = 100,
+  }) async {
+    try {
+      final resp = await _svc.listPlaylistSongs(ListPlaylistSongsRequest(
+        playlistId: playlistId,
+        pagination: PaginationRequest(pageSize: pageSize),
+      ));
+      return resp.songs;
     } on GrpcError catch (e) { throw PlaylistRepositoryException(e.message ?? '', grpcCode: e.code); }
   }
 }
