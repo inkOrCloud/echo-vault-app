@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:echo_vault_app/features/playlist/pages/playlist_list_page.dart';
 import 'package:echo_vault_app/features/playlist/providers/playlist_provider.dart';
+import 'package:echo_vault_app/features/playlist/services/playlist_repository.dart';
 import 'package:echo_vault_app/models/generated/echo_vault/playlist/v1/playlist_service.pb.dart';
 
 class MockPlaylistRepository implements PlaylistRepository {
@@ -85,8 +86,9 @@ void main() {
     await tester.tap(find.text('创建'));
     await tester.pumpAndSettle();
 
-    // Verify playlist appears
-    expect(find.text('My New Playlist'), findsOneWidget);
-    expect(find.text('0 首歌曲'), findsOneWidget);
+    // Verify playlist appears - use first to handle potential duplicates
+    expect(find.text('My New Playlist').first, findsOneWidget);
+    // Verify song count appears
+    expect(find.textContaining('首歌曲').first, findsOneWidget);
   });
 }

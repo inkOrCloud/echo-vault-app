@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:echo_vault_app/features/playlist/pages/playlist_detail_page.dart';
 import 'package:echo_vault_app/features/playlist/providers/playlist_provider.dart';
 import 'package:echo_vault_app/features/playlist/providers/playlist_song_provider.dart';
+import 'package:echo_vault_app/features/playlist/services/playlist_repository.dart';
 import 'package:echo_vault_app/models/generated/echo_vault/playlist/v1/playlist_service.pb.dart';
 
 class MockPlaylistRepository implements PlaylistRepository {
@@ -50,11 +51,18 @@ void main() {
     final mockRepo = MockPlaylistRepository();
     mockRepo.playlists = [Playlist(id: 'p1', name: 'Test Playlist', songCount: 0)];
 
+    final container = ProviderContainer(
+      overrides: [
+        playlistRepositoryProvider.overrideWithValue(mockRepo),
+      ],
+    );
+
+    // Pre-load playlists
+    await container.read(playlistProvider.notifier).loadPlaylists();
+
     await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          playlistRepositoryProvider.overrideWithValue(mockRepo),
-        ],
+      UncontrolledProviderScope(
+        container: container,
         child: const MaterialApp(
           home: PlaylistDetailPage(playlistId: 'p1'),
         ),
@@ -65,5 +73,7 @@ void main() {
 
     expect(find.text('Test Playlist'), findsOneWidget);
     expect(find.text('暂无歌曲，点击 + 添加'), findsOneWidget);
+
+    container.dispose();
   });
 }
