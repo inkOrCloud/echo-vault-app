@@ -37,10 +37,12 @@ class LibraryPage extends ConsumerWidget {
       ]));
       case LibraryStatus.loaded:
         final songs = state.filteredSongs;
-        if (songs.isEmpty) return Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
+        if (songs.isEmpty) {
+          return Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
           Icon(Icons.library_music, size: 64, color: Theme.of(context).colorScheme.outline), const SizedBox(height: 16),
           Text(state.searchQuery.isEmpty ? '曲库为空，点击右下角 + 添加歌曲' : '未找到匹配的歌曲'),
         ]));
+        }
         return RefreshIndicator(onRefresh: () async {}, child: ListView.separated(
           itemCount: songs.length, separatorBuilder: (_, __) => const Divider(height: 1),
           itemBuilder: (_, i) => SongListTile(song: songs[i], onTap: () {}),

@@ -1,7 +1,6 @@
 import 'package:fixnum/fixnum.dart';
 import 'package:grpc/grpc.dart';
 import 'package:echo_vault_app/core/grpc/client.dart';
-import 'package:echo_vault_app/models/generated/echo_vault/song/v1/song_service.pb.dart';
 import 'package:echo_vault_app/models/generated/echo_vault/song/v1/song_service.pbgrpc.dart';
 import 'package:echo_vault_app/models/generated/echo_vault/common/v1/types.pb.dart';
 

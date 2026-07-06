@@ -1,10 +1,8 @@
 import 'package:echo_vault_app/core/config/server_config.dart';
-import 'package:echo_vault_app/core/grpc/client.dart';
 
 class AuthService {
-  final GrpcClientManager _grpcClient;
-
-  AuthService(this._grpcClient);
+  // TODO: Add gRPC client dependency for actual authentication
+  AuthService();
 
   Future<({String userId, String username, String token})> login({
     required String username,

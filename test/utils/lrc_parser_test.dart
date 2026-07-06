@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:echo_vault_app/utils/lrc_parser.dart';
-import 'package:echo_vault_app/models/lyric_line.dart';
 
 void main() {
   group('LrcParser', () {

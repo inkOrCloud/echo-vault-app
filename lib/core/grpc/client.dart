@@ -2,7 +2,6 @@ import 'package:grpc/grpc.dart';
 
 class GrpcClientManager {
   ClientChannel? _channel;
-  String? _accessToken;
   bool _connected = false;
 
   bool get isConnected => _connected;
@@ -18,7 +17,11 @@ class GrpcClientManager {
     _connected = true;
   }
 
-  void setToken(String t) => _accessToken = t;
-  void clearToken() => _accessToken = null;
+  void setToken(String t) {
+    // TODO: Implement token management for authenticated gRPC calls
+  }
+  void clearToken() {
+    // TODO: Implement token management for authenticated gRPC calls
+  }
   Future<void> disconnect() async { if (_connected && _channel != null) { await _channel!.shutdown(); _connected = false; } }
 }
