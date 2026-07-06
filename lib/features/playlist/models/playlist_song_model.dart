@@ -37,4 +37,35 @@ class PlaylistSongModel {
       addedAt: Timestamp.fromDateTime(addedAt),
     );
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is PlaylistSongModel &&
+          runtimeType == other.runtimeType &&
+          playlistId == other.playlistId &&
+          songId == other.songId &&
+          position == other.position &&
+          addedAt == other.addedAt;
+
+  @override
+  int get hashCode =>
+      playlistId.hashCode ^
+      songId.hashCode ^
+      position.hashCode ^
+      addedAt.hashCode;
+
+  PlaylistSongModel copyWith({
+    String? playlistId,
+    String? songId,
+    int? position,
+    DateTime? addedAt,
+  }) {
+    return PlaylistSongModel(
+      playlistId: playlistId ?? this.playlistId,
+      songId: songId ?? this.songId,
+      position: position ?? this.position,
+      addedAt: addedAt ?? this.addedAt,
+    );
+  }
 }

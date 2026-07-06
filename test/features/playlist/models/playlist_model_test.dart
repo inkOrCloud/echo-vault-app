@@ -116,4 +116,44 @@ void main() {
     expect(proto.songId, 's1');
     expect(proto.position, 5);
   });
+
+  test('PlaylistModel roundtrip fromProto → toProto → fromProto', () {
+    final original = PlaylistModel(
+      id: 'p1',
+      name: 'Test',
+      description: 'Desc',
+      coverUrl: 'url',
+      type: Playlist_Type.TYPE_USER,
+      ownerId: 'u1',
+      isPublic: true,
+      songCount: 5,
+      version: 3,
+      createdAt: DateTime.utc(2026, 1, 1),
+      updatedAt: DateTime.utc(2026, 1, 2),
+    );
+    final roundtripped = PlaylistModel.fromProto(original.toProto());
+    expect(roundtripped.id, original.id);
+    expect(roundtripped.name, original.name);
+    expect(roundtripped.description, original.description);
+    expect(roundtripped.coverUrl, original.coverUrl);
+    expect(roundtripped.type, original.type);
+    expect(roundtripped.ownerId, original.ownerId);
+    expect(roundtripped.isPublic, original.isPublic);
+    expect(roundtripped.songCount, original.songCount);
+    expect(roundtripped.version, original.version);
+  });
+
+  test('PlaylistSongModel roundtrip fromProto → toProto → fromProto', () {
+    final original = PlaylistSongModel(
+      playlistId: 'p1',
+      songId: 's1',
+      position: 5,
+      addedAt: DateTime.utc(2026, 1, 1),
+    );
+    final roundtripped = PlaylistSongModel.fromProto(original.toProto());
+    expect(roundtripped.playlistId, original.playlistId);
+    expect(roundtripped.songId, original.songId);
+    expect(roundtripped.position, original.position);
+    expect(roundtripped.addedAt, original.addedAt);
+  });
 }
