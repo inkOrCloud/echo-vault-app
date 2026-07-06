@@ -86,6 +86,32 @@ void main() {
     expect(updated.ownerId, 'u1');
   });
 
+  test('PlaylistModel copyWith clearDescription', () {
+    final model = PlaylistModel(
+      id: 'p1',
+      name: 'Test',
+      description: 'Desc',
+      ownerId: 'u1',
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+    );
+    final cleared = model.copyWith(clearDescription: true);
+    expect(cleared.description, isNull);
+  });
+
+  test('PlaylistModel copyWith clearCoverUrl', () {
+    final model = PlaylistModel(
+      id: 'p1',
+      name: 'Test',
+      coverUrl: 'url',
+      ownerId: 'u1',
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+    );
+    final cleared = model.copyWith(clearCoverUrl: true);
+    expect(cleared.coverUrl, isNull);
+  });
+
   test('PlaylistSongModel fromProto', () {
     final now = DateTime.now().toUtc();
     final proto = PlaylistSong(

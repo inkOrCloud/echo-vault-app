@@ -12,20 +12,34 @@ class MockPlaylistService implements PlaylistService {
     if (throwOnCall) throw GrpcError.unavailable('down');
     return Future.value(_handlers['createPlaylist']!() as CreatePlaylistResponse);
   }
-  @override Future<GetPlaylistResponse> getPlaylist(GetPlaylistRequest r) =>
-    Future.value(_handlers['getPlaylist']!() as GetPlaylistResponse);
-  @override Future<ListPlaylistsResponse> listPlaylists(ListPlaylistsRequest r) =>
-    Future.value(_handlers['listPlaylists']!() as ListPlaylistsResponse);
-  @override Future<UpdatePlaylistResponse> updatePlaylist(UpdatePlaylistRequest r) =>
-    Future.value(_handlers['updatePlaylist']!() as UpdatePlaylistResponse);
-  @override Future<DeletePlaylistResponse> deletePlaylist(DeletePlaylistRequest r) =>
-    Future.value(_handlers['deletePlaylist']!() as DeletePlaylistResponse);
-  @override Future<AddSongResponse> addSong(AddSongRequest r) =>
-    Future.value(_handlers['addSong']!() as AddSongResponse);
-  @override Future<RemoveSongResponse> removeSong(RemoveSongRequest r) =>
-    Future.value(_handlers['removeSong']!() as RemoveSongResponse);
-  @override Future<ReorderSongsResponse> reorderSongs(ReorderSongsRequest r) =>
-    Future.value(_handlers['reorderSongs']!() as ReorderSongsResponse);
+  @override Future<GetPlaylistResponse> getPlaylist(GetPlaylistRequest r) {
+    if (throwOnCall) throw GrpcError.unavailable('down');
+    return Future.value(_handlers['getPlaylist']!() as GetPlaylistResponse);
+  }
+  @override Future<ListPlaylistsResponse> listPlaylists(ListPlaylistsRequest r) {
+    if (throwOnCall) throw GrpcError.unavailable('down');
+    return Future.value(_handlers['listPlaylists']!() as ListPlaylistsResponse);
+  }
+  @override Future<UpdatePlaylistResponse> updatePlaylist(UpdatePlaylistRequest r) {
+    if (throwOnCall) throw GrpcError.unavailable('down');
+    return Future.value(_handlers['updatePlaylist']!() as UpdatePlaylistResponse);
+  }
+  @override Future<DeletePlaylistResponse> deletePlaylist(DeletePlaylistRequest r) {
+    if (throwOnCall) throw GrpcError.unavailable('down');
+    return Future.value(_handlers['deletePlaylist']!() as DeletePlaylistResponse);
+  }
+  @override Future<AddSongResponse> addSong(AddSongRequest r) {
+    if (throwOnCall) throw GrpcError.unavailable('down');
+    return Future.value(_handlers['addSong']!() as AddSongResponse);
+  }
+  @override Future<RemoveSongResponse> removeSong(RemoveSongRequest r) {
+    if (throwOnCall) throw GrpcError.unavailable('down');
+    return Future.value(_handlers['removeSong']!() as RemoveSongResponse);
+  }
+  @override Future<ReorderSongsResponse> reorderSongs(ReorderSongsRequest r) {
+    if (throwOnCall) throw GrpcError.unavailable('down');
+    return Future.value(_handlers['reorderSongs']!() as ReorderSongsResponse);
+  }
 }
 
 void main() {
@@ -61,5 +75,68 @@ void main() {
     final ps = await repo.addSongToPlaylist(playlistId: 'p1', songId: 's1');
     expect(ps.playlistId, 'p1');
     expect(ps.songId, 's1');
+  });
+
+  test('updatePlaylist partial update', () async {
+    mock.when('updatePlaylist', () => UpdatePlaylistResponse(
+      playlist: Playlist(id: 'p1', name: 'Updated', description: 'desc', isPublic: true),
+    ));
+    final p = await repo.updatePlaylist(id: 'p1', name: 'Updated');
+    expect(p.name, 'Updated');
+  });
+
+  test('deletePlaylist', () async {
+    mock.when('deletePlaylist', () => DeletePlaylistResponse());
+    await repo.deletePlaylist('p1');
+  });
+
+  test('getPlaylist', () async {
+    mock.when('getPlaylist', () => GetPlaylistResponse(
+      playlist: Playlist(id: 'p1', name: 'Test'),
+    ));
+    final p = await repo.getPlaylist('p1');
+    expect(p.id, 'p1');
+  });
+
+  test('removeSongFromPlaylist', () async {
+    mock.when('removeSong', () => RemoveSongResponse());
+    await repo.removeSongFromPlaylist(playlistId: 'p1', songId: 's1');
+  });
+
+  test('reorderSongs', () async {
+    mock.when('reorderSongs', () => ReorderSongsResponse());
+    await repo.reorderSongs(playlistId: 'p1', songIds: ['s1', 's2', 's3']);
+  });
+
+  test('updatePlaylist throws on error', () async {
+    mock.throwOnCall = true;
+    expect(
+      () => repo.updatePlaylist(id: 'p1', name: 'Updated'),
+      throwsA(isA<PlaylistRepositoryException>()),
+    );
+  });
+
+  test('deletePlaylist throws on error', () async {
+    mock.throwOnCall = true;
+    expect(
+      () => repo.deletePlaylist('p1'),
+      throwsA(isA<PlaylistRepositoryException>()),
+    );
+  });
+
+  test('getPlaylist throws on error', () async {
+    mock.throwOnCall = true;
+    expect(
+      () => repo.getPlaylist('p1'),
+      throwsA(isA<PlaylistRepositoryException>()),
+    );
+  });
+
+  test('listPlaylists throws on error', () async {
+    mock.throwOnCall = true;
+    expect(
+      () => repo.listPlaylists(),
+      throwsA(isA<PlaylistRepositoryException>()),
+    );
   });
 }

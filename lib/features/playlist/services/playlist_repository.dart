@@ -79,12 +79,11 @@ class PlaylistRepository {
     bool? isPublic,
   }) async {
     try {
-      return (await _svc.updatePlaylist(UpdatePlaylistRequest(
-        id: id,
-        name: name ?? '',
-        description: description ?? '',
-        isPublic: isPublic ?? false,
-      ))).playlist;
+      final req = UpdatePlaylistRequest(id: id);
+      if (name != null) req.name = name;
+      if (description != null) req.description = description;
+      if (isPublic != null) req.isPublic = isPublic;
+      return (await _svc.updatePlaylist(req)).playlist;
     } on GrpcError catch (e) { throw PlaylistRepositoryException(e.message ?? '', grpcCode: e.code); }
   }
 

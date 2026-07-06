@@ -32,7 +32,20 @@ class MockPlaylistRepository implements PlaylistRepository {
   Future<Playlist> getPlaylist(String id) async => throw UnimplementedError();
 
   @override
-  Future<Playlist> updatePlaylist({required String id, String? name, String? description, bool? isPublic}) async => throw UnimplementedError();
+  Future<Playlist> updatePlaylist({required String id, String? name, String? description, bool? isPublic}) async {
+    if (shouldThrow) throw Exception('error');
+    final index = playlists.indexWhere((p) => p.id == id);
+    if (index == -1) throw Exception('Playlist not found');
+    final existing = playlists[index];
+    final updated = Playlist(
+      id: existing.id,
+      name: name ?? existing.name,
+      description: description ?? existing.description,
+      isPublic: isPublic ?? existing.isPublic,
+    );
+    playlists[index] = updated;
+    return updated;
+  }
 
   @override
   Future<PlaylistSong> addSongToPlaylist({required String playlistId, required String songId, int position = 0}) async => throw UnimplementedError();
@@ -86,5 +99,72 @@ void main() {
     await container.read(playlistProvider.notifier).loadPlaylists();
     container.read(playlistProvider.notifier).setQuery('rock');
     expect(container.read(playlistProvider).filteredPlaylists.length, 1);
+  });
+
+  test('loadPlaylists sets error status on failure', () async {
+    mockRepo.shouldThrow = true;
+    await container.read(playlistProvider.notifier).loadPlaylists();
+    expect(container.read(playlistProvider).status, PlaylistStatus.error);
+    expect(container.read(playlistProvider).error, isNotNull);
+  });
+
+  test('createPlaylist rethrows on failure', () async {
+    mockRepo.playlists = [Playlist(id: 'p1', name: 'Test')];
+    await container.read(playlistProvider.notifier).loadPlaylists();
+    mockRepo.shouldThrow = true;
+    try {
+      await container.read(playlistProvider.notifier).createPlaylist(name: 'Test');
+      fail('Expected exception');
+    } catch (e) {
+      expect(e, isA<Exception>());
+    }
+    expect(container.read(playlistProvider).status, PlaylistStatus.error);
+  });
+
+  test('loadPlaylists preserves searchQuery', () async {
+    mockRepo.playlists = [Playlist(id: 'p1', name: 'Test')];
+    container.read(playlistProvider.notifier).setQuery('test');
+    await container.read(playlistProvider.notifier).loadPlaylists();
+    expect(container.read(playlistProvider).searchQuery, 'test');
+  });
+
+  test('updatePlaylist', () async {
+    mockRepo.playlists = [Playlist(id: 'p1', name: 'Original', description: 'desc', isPublic: false)];
+    await container.read(playlistProvider.notifier).loadPlaylists();
+    await container.read(playlistProvider.notifier).updatePlaylist(
+      id: 'p1',
+      name: 'Updated',
+      isPublic: true,
+    );
+    final updated = container.read(playlistProvider).playlists.first;
+    expect(updated.name, 'Updated');
+    expect(updated.description, 'desc');
+    expect(updated.isPublic, true);
+  });
+
+  test('updatePlaylist rethrows on failure', () async {
+    mockRepo.playlists = [Playlist(id: 'p1', name: 'Original')];
+    await container.read(playlistProvider.notifier).loadPlaylists();
+    mockRepo.shouldThrow = true;
+    try {
+      await container.read(playlistProvider.notifier).updatePlaylist(id: 'p1', name: 'Updated');
+      fail('Expected exception');
+    } catch (e) {
+      expect(e, isA<Exception>());
+    }
+    expect(container.read(playlistProvider).status, PlaylistStatus.error);
+  });
+
+  test('deletePlaylist rethrows on failure', () async {
+    mockRepo.playlists = [Playlist(id: 'p1', name: 'Test')];
+    await container.read(playlistProvider.notifier).loadPlaylists();
+    mockRepo.shouldThrow = true;
+    try {
+      await container.read(playlistProvider.notifier).deletePlaylist('p1');
+      fail('Expected exception');
+    } catch (e) {
+      expect(e, isA<Exception>());
+    }
+    expect(container.read(playlistProvider).status, PlaylistStatus.error);
   });
 }

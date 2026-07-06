@@ -30,12 +30,24 @@ class PlaylistNotifier extends StateNotifier<PlaylistState> {
   PlaylistNotifier(this._repo) : super(const PlaylistState());
 
   Future<void> loadPlaylists() async {
-    state = const PlaylistState(status: PlaylistStatus.loading);
+    state = PlaylistState(
+      status: PlaylistStatus.loading,
+      playlists: state.playlists,
+      searchQuery: state.searchQuery,
+    );
     try {
       final playlists = await _repo.listPlaylists();
-      state = PlaylistState(status: PlaylistStatus.loaded, playlists: playlists);
+      state = PlaylistState(
+        status: PlaylistStatus.loaded,
+        playlists: playlists,
+        searchQuery: state.searchQuery,
+      );
     } catch (e) {
-      state = PlaylistState(status: PlaylistStatus.error, error: e.toString());
+      state = PlaylistState(
+        status: PlaylistStatus.error,
+        error: e.toString(),
+        searchQuery: state.searchQuery,
+      );
     }
   }
 
@@ -53,10 +65,15 @@ class PlaylistNotifier extends StateNotifier<PlaylistState> {
       state = PlaylistState(
         status: PlaylistStatus.loaded,
         playlists: [...state.playlists, playlist],
+        searchQuery: state.searchQuery,
       );
       return playlist;
     } catch (e) {
-      state = PlaylistState(status: PlaylistStatus.error, error: e.toString());
+      state = PlaylistState(
+        status: PlaylistStatus.error,
+        error: e.toString(),
+        searchQuery: state.searchQuery,
+      );
       rethrow;
     }
   }
@@ -67,9 +84,42 @@ class PlaylistNotifier extends StateNotifier<PlaylistState> {
       state = PlaylistState(
         status: PlaylistStatus.loaded,
         playlists: state.playlists.where((p) => p.id != id).toList(),
+        searchQuery: state.searchQuery,
       );
     } catch (e) {
-      state = PlaylistState(status: PlaylistStatus.error, error: e.toString());
+      state = PlaylistState(
+        status: PlaylistStatus.error,
+        error: e.toString(),
+        searchQuery: state.searchQuery,
+      );
+      rethrow;
+    }
+  }
+
+  Future<void> updatePlaylist({
+    required String id,
+    String? name,
+    String? description,
+    bool? isPublic,
+  }) async {
+    try {
+      final updated = await _repo.updatePlaylist(
+        id: id,
+        name: name,
+        description: description,
+        isPublic: isPublic,
+      );
+      state = PlaylistState(
+        status: PlaylistStatus.loaded,
+        playlists: state.playlists.map((p) => p.id == id ? updated : p).toList(),
+        searchQuery: state.searchQuery,
+      );
+    } catch (e) {
+      state = PlaylistState(
+        status: PlaylistStatus.error,
+        error: e.toString(),
+        searchQuery: state.searchQuery,
+      );
       rethrow;
     }
   }
