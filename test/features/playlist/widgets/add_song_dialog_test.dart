@@ -3,11 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:echo_vault_app/features/playlist/widgets/add_song_dialog.dart';
 import 'package:echo_vault_app/features/playlist/providers/playlist_provider.dart';
-import 'package:echo_vault_app/features/playlist/providers/playlist_song_provider.dart';
 import 'package:echo_vault_app/features/playlist/services/playlist_repository.dart';
-import 'package:echo_vault_app/features/library/providers/library_provider.dart';
 import 'package:echo_vault_app/models/generated/echo_vault/playlist/v1/playlist_service.pb.dart';
-import 'package:echo_vault_app/models/generated/echo_vault/song/v1/song_service.pb.dart';
 
 class MockPlaylistRepository implements PlaylistRepository {
   @override

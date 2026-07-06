@@ -3,7 +3,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:echo_vault_app/features/playlist/pages/playlist_detail_page.dart';
 import 'package:echo_vault_app/features/playlist/providers/playlist_provider.dart';
-import 'package:echo_vault_app/features/playlist/providers/playlist_song_provider.dart';
 import 'package:echo_vault_app/features/playlist/services/playlist_repository.dart';
 import 'package:echo_vault_app/models/generated/echo_vault/playlist/v1/playlist_service.pb.dart';
 

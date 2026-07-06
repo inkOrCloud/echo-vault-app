@@ -98,7 +98,7 @@ class _PlaylistDetailPageState extends ConsumerState<PlaylistDetailPage> {
         }
         return ReorderableListView.builder(
           itemCount: songs.length,
-          onReorder: (oldIndex, newIndex) {
+          onReorderItem: (oldIndex, newIndex) {
             if (oldIndex < newIndex) newIndex -= 1;
             final songIds = songs.map((s) => s.id as String).toList();
             final item = songIds.removeAt(oldIndex);
