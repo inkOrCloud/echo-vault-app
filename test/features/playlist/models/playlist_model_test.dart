@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fixnum/fixnum.dart';
 import 'package:echo_vault_app/features/playlist/models/playlist_model.dart';
+import 'package:echo_vault_app/features/playlist/models/playlist_song_model.dart';
 import 'package:echo_vault_app/models/generated/echo_vault/playlist/v1/playlist_service.pb.dart';
 import 'package:echo_vault_app/models/generated/google/protobuf/timestamp.pb.dart';
 
@@ -83,5 +84,36 @@ void main() {
     expect(updated.id, 'p1');
     expect(updated.name, 'Updated Name');
     expect(updated.ownerId, 'u1');
+  });
+
+  test('PlaylistSongModel fromProto', () {
+    final now = DateTime.now().toUtc();
+    final proto = PlaylistSong(
+      playlistId: 'p1',
+      songId: 's1',
+      position: 5,
+      addedAt: Timestamp.fromDateTime(now),
+    );
+
+    final model = PlaylistSongModel.fromProto(proto);
+    expect(model.playlistId, 'p1');
+    expect(model.songId, 's1');
+    expect(model.position, 5);
+    expect(model.addedAt.toUtc(), now);
+  });
+
+  test('PlaylistSongModel toProto', () {
+    final now = DateTime.now().toUtc();
+    final model = PlaylistSongModel(
+      playlistId: 'p1',
+      songId: 's1',
+      position: 5,
+      addedAt: now,
+    );
+
+    final proto = model.toProto();
+    expect(proto.playlistId, 'p1');
+    expect(proto.songId, 's1');
+    expect(proto.position, 5);
   });
 }
