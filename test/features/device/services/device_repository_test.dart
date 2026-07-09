@@ -2,7 +2,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:grpc/grpc.dart';
 import 'package:echo_vault_app/features/device/services/device_repository.dart';
 import 'package:echo_vault_app/models/generated/echo_vault/user/v1/user_service.pb.dart';
-import 'package:echo_vault_app/models/generated/google/protobuf/timestamp.pb.dart';
 
 class MockDeviceService implements DeviceService {
   final Map<String, Object Function()> _handlers = {};

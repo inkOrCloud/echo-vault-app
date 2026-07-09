@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:echo_vault_app/features/navigation/app_drawer.dart';
 import 'package:echo_vault_app/providers/auth_provider.dart';
 
@@ -17,8 +16,8 @@ Widget createTestApp() {
       home: Scaffold(
         body: DrawerController(
           alignment: DrawerAlignment.start,
-          child: AppDrawer(),
           isDrawerOpen: true,
+          child: AppDrawer(),
         ),
       ),
     ),
