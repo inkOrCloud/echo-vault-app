@@ -1,7 +1,9 @@
-// lib/features/sync/providers/sync_provider.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:echo_vault_app/features/sync/services/sync_repository.dart';
+import 'package:echo_vault_app/models/generated/echo_vault/sync/v1/sync_service.pb.dart';
 
-enum SyncStatus { idle, syncing, error, completed }
+enum SyncStatus { idle, syncing, completed, error }
 
 class SyncState {
   final SyncStatus status;
@@ -19,53 +21,96 @@ class SyncState {
   });
 }
 
+final syncRepositoryProvider = Provider<SyncRepository>((ref) {
+  throw UnimplementedError('SyncRepository must be overridden');
+});
+
 final syncProvider = StateNotifierProvider<SyncNotifier, SyncState>((ref) {
-  return SyncNotifier();
+  return SyncNotifier(ref.read(syncRepositoryProvider));
 });
 
 class SyncNotifier extends StateNotifier<SyncState> {
-  SyncNotifier() : super(const SyncState());
+  final SyncRepository _repo;
+  SyncNotifier(this._repo) : super(const SyncState());
 
-  void setIdle() => state = const SyncState();
-  
-  void setSyncing({int pending = 0, int synced = 0}) {
+  /// 从 SharedPreferences 加载上次同步时间
+  Future<void> loadLastSyncTime() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final ms = prefs.getInt('sync_last_time');
+      if (ms != null) {
+        state = SyncState(
+          status: state.status,
+          pendingChanges: state.pendingChanges,
+          syncedChanges: state.syncedChanges,
+          error: state.error,
+          lastSyncTime: DateTime.fromMillisecondsSinceEpoch(ms),
+        );
+      }
+    } catch (_) {
+      // 忽略加载失败
+    }
+  }
+
+  /// 执行同步
+  Future<void> startSync({
+    List<SyncChange> changes = const [],
+  }) async {
     state = SyncState(
       status: SyncStatus.syncing,
-      pendingChanges: pending,
-      syncedChanges: synced,
+      pendingChanges: changes.length,
       lastSyncTime: state.lastSyncTime,
     );
+    try {
+      await _repo.pushChanges(
+        deviceId: 'local',
+        changes: changes,
+      );
+      await _updateLastSyncTime();
+      state = SyncState(
+        status: SyncStatus.completed,
+        syncedChanges: changes.length,
+        lastSyncTime: state.lastSyncTime,
+      );
+    } catch (e) {
+      state = SyncState(
+        status: SyncStatus.error,
+        error: e.toString(),
+        lastSyncTime: state.lastSyncTime,
+      );
+    }
   }
-  
-  void setCompleted() {
-    state = SyncState(
-      status: SyncStatus.completed,
-      lastSyncTime: DateTime.now(),
-    );
-  }
-  
-  void setError(String message) {
-    state = SyncState(
-      status: SyncStatus.error,
-      error: message,
-      lastSyncTime: state.lastSyncTime,
-    );
-  }
-  
+
+  /// 设置待同步变更数
   void setPendingChanges(int count) {
     state = SyncState(
       status: state.status,
       pendingChanges: count,
+      syncedChanges: state.syncedChanges,
+      error: state.error,
       lastSyncTime: state.lastSyncTime,
     );
   }
-  
-  // 从本地存储恢复同步状态
-  void restoreFromStorage({DateTime? lastSyncTime, int pendingChanges = 0}) {
-    state = SyncState(
-      status: lastSyncTime != null ? SyncStatus.completed : SyncStatus.idle,
-      pendingChanges: pendingChanges,
-      lastSyncTime: lastSyncTime,
-    );
+
+  /// 重置到 idle
+  void reset() {
+    state = const SyncState(lastSyncTime: null);
+  }
+
+  Future<void> _updateLastSyncTime() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final now = DateTime.now();
+      await prefs.setInt('sync_last_time', now.millisecondsSinceEpoch);
+      state = SyncState(
+        status: state.status,
+        pendingChanges: state.pendingChanges,
+        syncedChanges: state.syncedChanges,
+        error: state.error,
+        lastSyncTime: now,
+      );
+    } catch (_) {
+      // 忽略持久化失败
+    }
   }
 }

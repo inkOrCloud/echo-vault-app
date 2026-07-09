@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:echo_vault_app/features/navigation/app_drawer.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:echo_vault_app/features/library/providers/library_provider.dart';
 import 'package:echo_vault_app/features/library/widgets/song_list_tile.dart';
-import 'package:echo_vault_app/main.dart' show AppDrawer;
 
 class LibraryPage extends ConsumerWidget {
   const LibraryPage({super.key});
@@ -33,26 +33,20 @@ class LibraryPage extends ConsumerWidget {
 
   Widget _buildBody(BuildContext context, LibraryState state) {
     switch (state.status) {
-      case LibraryStatus.loading:
-        return const Center(child: CircularProgressIndicator());
-      case LibraryStatus.error:
-        return Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
-          Icon(Icons.error_outline, size: 48, color: Theme.of(context).colorScheme.error),
-          const SizedBox(height: 16),
-          Text('加载失败: ${state.error}'),
-        ]));
+      case LibraryStatus.loading: return const Center(child: CircularProgressIndicator());
+      case LibraryStatus.error: return Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
+        Icon(Icons.error_outline, size: 48, color: Theme.of(context).colorScheme.error), const SizedBox(height: 16), Text('加载失败: ${state.error}'),
+      ]));
       case LibraryStatus.loaded:
         final songs = state.filteredSongs;
         if (songs.isEmpty) {
           return Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
-            Icon(Icons.library_music, size: 64, color: Theme.of(context).colorScheme.outline),
-            const SizedBox(height: 16),
-            Text(state.searchQuery.isEmpty ? '曲库为空，点击右下角 + 添加歌曲' : '未找到匹配的歌曲'),
-          ]));
+          Icon(Icons.library_music, size: 64, color: Theme.of(context).colorScheme.outline), const SizedBox(height: 16),
+          Text(state.searchQuery.isEmpty ? '曲库为空，点击右下角 + 添加歌曲' : '未找到匹配的歌曲'),
+        ]));
         }
         return RefreshIndicator(onRefresh: () async {}, child: ListView.separated(
-          itemCount: songs.length,
-          separatorBuilder: (_, __) => const Divider(height: 1),
+          itemCount: songs.length, separatorBuilder: (_, __) => const Divider(height: 1),
           itemBuilder: (_, i) => SongListTile(song: songs[i], onTap: () {}),
         ));
     }

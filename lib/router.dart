@@ -7,11 +7,11 @@ import 'package:echo_vault_app/features/library/pages/library_page.dart';
 import 'package:echo_vault_app/features/publish/pages/scan_result_page.dart';
 import 'package:echo_vault_app/features/publish/pages/edit_metadata_page.dart';
 import 'package:echo_vault_app/features/player/pages/player_page.dart';
+import 'package:echo_vault_app/features/library/models/scanned_file.dart';
 import 'package:echo_vault_app/features/playlist/pages/playlist_list_page.dart';
 import 'package:echo_vault_app/features/playlist/pages/playlist_detail_page.dart';
 import 'package:echo_vault_app/features/device/pages/device_list_page.dart';
 import 'package:echo_vault_app/features/sync/pages/sync_status_page.dart';
-import 'package:echo_vault_app/features/library/models/scanned_file.dart';
 import 'package:echo_vault_app/providers/auth_provider.dart';
 import 'package:echo_vault_app/providers/server_provider.dart';
 
@@ -47,18 +47,13 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
       ),
       GoRoute(path: '/player', builder: (_, __) => const PlayerPage()),
+      GoRoute(path: '/playlists', builder: (_, __) => const PlaylistListPage()),
       GoRoute(
-        path: '/playlist',
-        builder: (_, __) => const PlaylistListPage(),
-        routes: [
-          GoRoute(
-            path: ':id',
-            builder: (_, state) {
-              final id = state.pathParameters['id']!;
-              return PlaylistDetailPage(playlistId: id);
-            },
-          ),
-        ],
+        path: '/playlist/:id',
+        builder: (context, state) {
+          final playlistId = state.pathParameters['id']!;
+          return PlaylistDetailPage(playlistId: playlistId);
+        },
       ),
       GoRoute(path: '/devices', builder: (_, __) => const DeviceListPage()),
       GoRoute(path: '/sync', builder: (_, __) => const SyncStatusPage()),

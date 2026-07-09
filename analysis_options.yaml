@@ -29,7 +29,16 @@ linter:
 
 analyzer:
   exclude:
+    # 忽略 protobuf 生成目录
+    - lib/generated/**
+    - lib/src/proto/**
+    # 忽略 freezed/json_serializable 等生成文件
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+    # 忽略 flutter_gen 生成文件
+    - lib/gen/**
+    - lib/models/gernerated/**
     - "**/*.pb.dart"
-    - "**/*.pbgrpc.dart"
-    - "**/*.pbjson.dart"
     - "**/*.pbenum.dart"
+    - "**/*.pbjson.dart"
+    - "**/*.pbgrpc.dart"

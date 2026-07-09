@@ -1,16 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:echo_vault_app/features/navigation/app_drawer.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:echo_vault_app/features/playlist/services/playlist_repository.dart';
-import 'package:echo_vault_app/models/generated/echo_vault/playlist/v1/playlist_service.pb.dart';
-import 'package:echo_vault_app/models/generated/echo_vault/song/v1/song_service.pb.dart';
 import 'package:echo_vault_app/features/library/providers/library_provider.dart';
-import 'package:echo_vault_app/features/library/services/grpc_providers.dart';
-
-// 歌单仓储提供者
-final playlistRepositoryProvider = Provider<PlaylistRepository>((ref) {
-  final clientManager = ref.watch(grpcClientProvider);
-  return PlaylistRepository(clientManager);
-});
+import 'package:echo_vault_app/features/library/widgets/song_list_tile.dart';
+import 'package:echo_vault_app/features/playlist/providers/playlist_provider.dart';
+import 'package:echo_vault_app/features/playlist/providers/playlist_song_provider.dart';
+import 'package:echo_vault_app/features/playlist/widgets/add_song_dialog.dart';
 
 class PlaylistDetailPage extends ConsumerStatefulWidget {
   final String playlistId;
@@ -22,178 +17,167 @@ class PlaylistDetailPage extends ConsumerStatefulWidget {
 }
 
 class _PlaylistDetailPageState extends ConsumerState<PlaylistDetailPage> {
-  Playlist? _playlist;
-  List<PlaylistSong> _songs = [];
-  bool _loading = true;
-  String? _error;
-
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadPlaylist();
+    Future.microtask(() {
+      ref.read(playlistSongProvider(widget.playlistId).notifier).loadSongs();
     });
-  }
-
-  Future<void> _loadPlaylist() async {
-    setState(() {
-      _loading = true;
-      _error = null;
-    });
-    
-    try {
-      final repository = ref.read(playlistRepositoryProvider);
-      final playlist = await repository.getPlaylist(widget.playlistId);
-      final songs = await repository.listPlaylistSongs(widget.playlistId);
-      
-      if (mounted) {
-        setState(() {
-          _playlist = playlist;
-          _songs = songs;
-          _loading = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _error = e.toString();
-          _loading = false;
-        });
-      }
-    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final playlistState = ref.watch(playlistProvider);
+    final songState = ref.watch(playlistSongProvider(widget.playlistId));
+    final libraryState = ref.watch(libraryProvider);
+
+    // Find playlist
+    final playlist = playlistState.playlists
+        .where((p) => p.id == widget.playlistId)
+        .firstOrNull;
+
+    if (playlist == null) {
+      return Scaffold(
+      drawer: const AppDrawer(),
+        appBar: AppBar(title: const Text('歌单')),
+        body: const Center(child: Text('歌单不存在')),
+      );
+    }
+
+    // Get actual songs from library
+    final playlistSongIds = songState.playlistSongs.map((ps) => ps.songId).toSet();
+    final songs = libraryState.songs.where((s) => playlistSongIds.contains(s.id)).toList();
+
     return Scaffold(
+      drawer: const AppDrawer(),
       appBar: AppBar(
-        title: Text(_playlist?.name ?? '歌单详情'),
+        title: Text(playlist.name),
         actions: [
-          if (_playlist != null)
-            IconButton(
-              icon: const Icon(Icons.edit),
-              onPressed: () => _showEditDialog(),
-            ),
+          IconButton(
+            icon: const Icon(Icons.edit),
+            onPressed: () => _showEditDialog(context, playlist),
+          ),
+          IconButton(
+            icon: const Icon(Icons.delete),
+            onPressed: () => _confirmDelete(context),
+          ),
         ],
       ),
-      body: _buildBody(),
+      body: _buildBody(context, songState, songs),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _showAddSongDialog(),
+        onPressed: () => _showAddSongDialog(context),
         child: const Icon(Icons.add),
       ),
     );
   }
 
-  Widget _buildBody() {
-    if (_loading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-    
-    if (_error != null) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.error_outline, size: 64, color: Colors.red),
-            const SizedBox(height: 16),
-            Text('加载失败: $_error'),
-            const SizedBox(height: 16),
-            FilledButton(
-              onPressed: _loadPlaylist,
-              child: const Text('重试'),
-            ),
-          ],
-        ),
-      );
-    }
-    
-    if (_songs.isEmpty) {
-      return const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.music_note, size: 64, color: Colors.grey),
-            SizedBox(height: 16),
-            Text('歌单是空的', style: TextStyle(color: Colors.grey)),
-            SizedBox(height: 8),
-            Text('点击右下角 + 添加歌曲', style: TextStyle(color: Colors.grey, fontSize: 12)),
-          ],
-        ),
-      );
-    }
-    
-    return _buildSongList();
-  }
-
-  Widget _buildSongList() {
-    return RefreshIndicator(
-      onRefresh: _loadPlaylist,
-      child: ReorderableListView.builder(
-        itemCount: _songs.length,
-        onReorderItem: (oldIndex, newIndex) => _reorderSongs(oldIndex, newIndex),
-        itemBuilder: (context, index) {
-          final playlistSong = _songs[index];
-          final song = playlistSong.song;
-          return ListTile(
-            key: ValueKey(song.id),
-            leading: CircleAvatar(child: Text('${index + 1}')),
-            title: Text(song.title.isNotEmpty ? song.title : '未知标题'),
-            subtitle: Text(song.artist.isNotEmpty ? song.artist : '未知艺术家'),
-            trailing: Row(
+  Widget _buildBody(BuildContext context, PlaylistSongState songState, List<dynamic> songs) {
+    switch (songState.status) {
+      case PlaylistSongStatus.loading:
+        return const Center(child: CircularProgressIndicator());
+      case PlaylistSongStatus.error:
+        return Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.error_outline, size: 48, color: Theme.of(context).colorScheme.error),
+              const SizedBox(height: 16),
+              Text('加载失败: ${songState.error}'),
+            ],
+          ),
+        );
+      case PlaylistSongStatus.loaded:
+        if (songs.isEmpty) {
+          return Center(
+            child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                IconButton(
-                  icon: const Icon(Icons.play_circle_outline),
-                  onPressed: () => _playSong(song),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.remove_circle_outline),
-                  onPressed: () => _removeSong(song.id),
-                ),
+                Icon(Icons.playlist_add, size: 64, color: Theme.of(context).colorScheme.outline),
+                const SizedBox(height: 16),
+                const Text('暂无歌曲，点击 + 添加'),
               ],
             ),
           );
-        },
-      ),
+        }
+        return ReorderableListView.builder(
+          itemCount: songs.length,
+          onReorderItem: (oldIndex, newIndex) {
+            if (oldIndex < newIndex) newIndex -= 1;
+            final songIds = songs.map((s) => s.id as String).toList();
+            final item = songIds.removeAt(oldIndex);
+            songIds.insert(newIndex, item);
+            ref.read(playlistSongProvider(widget.playlistId).notifier).reorderSongs(songIds);
+          },
+          itemBuilder: (_, i) {
+            final song = songs[i];
+            return Dismissible(
+              key: ValueKey(song.id),
+              direction: DismissDirection.endToStart,
+              background: Container(
+                color: Colors.red,
+                alignment: Alignment.centerRight,
+                padding: const EdgeInsets.only(right: 16),
+                child: const Icon(Icons.delete, color: Colors.white),
+              ),
+              onDismissed: (_) {
+                ref.read(playlistSongProvider(widget.playlistId).notifier).removeSong(song.id);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('已移除: ${song.title}')),
+                );
+              },
+              child: SongListTile(song: song),
+            );
+          },
+        );
+    }
+  }
+
+  void _showAddSongDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AddSongDialog(playlistId: widget.playlistId),
     );
   }
 
-  void _showEditDialog() {
-    final nameController = TextEditingController(text: _playlist?.name ?? '');
-    final descController = TextEditingController(text: _playlist?.description ?? '');
-    
+  void _showEditDialog(BuildContext context, dynamic playlist) {
+    final nameController = TextEditingController(text: playlist.name);
+    final descController = TextEditingController(text: playlist.description);
+
     showDialog(
       context: context,
-      builder: (dialogContext) => AlertDialog(
+      builder: (context) => AlertDialog(
         title: const Text('编辑歌单'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: nameController,
-              decoration: const InputDecoration(
-                labelText: '歌单名称',
-                border: OutlineInputBorder(),
-              ),
+              decoration: const InputDecoration(labelText: '歌单名称'),
             ),
             const SizedBox(height: 16),
             TextField(
               controller: descController,
-              decoration: const InputDecoration(
-                labelText: '描述（可选）',
-                border: OutlineInputBorder(),
-              ),
+              decoration: const InputDecoration(labelText: '描述（可选）'),
               maxLines: 2,
             ),
           ],
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
+            onPressed: () => Navigator.pop(context),
             child: const Text('取消'),
           ),
           FilledButton(
-            onPressed: () => _updatePlaylist(nameController, descController),
+            onPressed: () async {
+              if (nameController.text.trim().isNotEmpty) {
+                await ref.read(playlistProvider.notifier).updatePlaylist(
+                  id: widget.playlistId,
+                  name: nameController.text.trim(),
+                  description: descController.text.trim().isNotEmpty ? descController.text.trim() : null,
+                );
+                if (context.mounted) Navigator.pop(context);
+              }
+            },
             child: const Text('保存'),
           ),
         ],
@@ -201,186 +185,30 @@ class _PlaylistDetailPageState extends ConsumerState<PlaylistDetailPage> {
     );
   }
 
-  Future<void> _updatePlaylist(
-    TextEditingController nameController,
-    TextEditingController descController,
-  ) async {
-    final name = nameController.text.trim();
-    if (name.isEmpty) return;
-    
-    Navigator.pop(context);
-    
-    try {
-      final repository = ref.read(playlistRepositoryProvider);
-      final updated = await repository.updatePlaylist(
-        id: widget.playlistId,
-        name: name,
-        description: descController.text.trim(),
-      );
-      if (mounted) {
-        setState(() => _playlist = updated);
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('更新失败: $e')),
-        );
-      }
-    }
-  }
-
-  void _showAddSongDialog() {
-    final libraryState = ref.read(libraryProvider);
-    final allSongs = libraryState.songs;
-    
-    final existingSongIds = _songs.map((ps) => ps.songId).toSet();
-    final availableSongs = allSongs.where((s) => !existingSongIds.contains(s.id)).toList();
-    
-    if (availableSongs.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('没有可添加的歌曲')),
-      );
-      return;
-    }
-    
-    showModalBottomSheet(
+  void _confirmDelete(BuildContext context) {
+    showDialog(
       context: context,
-      isScrollControlled: true,
-      builder: (sheetContext) => DraggableScrollableSheet(
-        initialChildSize: 0.7,
-        minChildSize: 0.5,
-        maxChildSize: 0.9,
-        expand: false,
-        builder: (context, scrollController) => Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text('添加歌曲', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  IconButton(
-                    icon: const Icon(Icons.close),
-                    onPressed: () => Navigator.pop(sheetContext),
-                  ),
-                ],
-              ),
-            ),
-            Expanded(
-              child: ListView.builder(
-                controller: scrollController,
-                itemCount: availableSongs.length,
-                itemBuilder: (context, index) {
-                  final song = availableSongs[index];
-                  return ListTile(
-                    leading: CircleAvatar(child: Text(song.title.isNotEmpty ? song.title[0] : '?')),
-                    title: Text(song.title.isNotEmpty ? song.title : '未知标题'),
-                    subtitle: Text(song.artist.isNotEmpty ? song.artist : '未知艺术家'),
-                    trailing: const Icon(Icons.add_circle_outline),
-                    onTap: () => _addSong(song.id),
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Future<void> _addSong(String songId) async {
-    Navigator.pop(context);
-    
-    try {
-      final repository = ref.read(playlistRepositoryProvider);
-      await repository.addSong(
-        playlistId: widget.playlistId,
-        songId: songId,
-      );
-      if (mounted) {
-        await _loadPlaylist();
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('添加失败: $e')),
-        );
-      }
-    }
-  }
-
-  void _reorderSongs(int oldIndex, int newIndex) async {
-    if (oldIndex < newIndex) newIndex -= 1;
-    
-    final List<String> songIds = _songs.map((ps) => ps.songId).toList();
-    final item = songIds.removeAt(oldIndex);
-    songIds.insert(newIndex, item);
-    
-    try {
-      final repository = ref.read(playlistRepositoryProvider);
-      await repository.reorderSongs(
-        playlistId: widget.playlistId,
-        songIds: songIds,
-      );
-      
-      if (mounted) {
-        setState(() {
-          final movedItem = _songs.removeAt(oldIndex);
-          _songs.insert(newIndex, movedItem);
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('排序失败: $e')),
-        );
-        _loadPlaylist();
-      }
-    }
-  }
-
-  void _removeSong(String songId) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('确认移除'),
-        content: const Text('确定要从歌单中移除这首歌吗？'),
+      builder: (context) => AlertDialog(
+        title: const Text('删除歌单'),
+        content: const Text('确定要删除这个歌单吗？此操作不可撤销。'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(dialogContext, false),
+            onPressed: () => Navigator.pop(context),
             child: const Text('取消'),
           ),
           FilledButton(
-            onPressed: () => Navigator.pop(dialogContext, true),
-            child: const Text('移除'),
+            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () async {
+              await ref.read(playlistProvider.notifier).deletePlaylist(widget.playlistId);
+              if (context.mounted) {
+                Navigator.pop(context);
+                Navigator.pop(context);
+              }
+            },
+            child: const Text('删除'),
           ),
         ],
       ),
-    );
-    
-    if (confirmed != true || !mounted) return;
-    
-    try {
-      final repository = ref.read(playlistRepositoryProvider);
-      await repository.removeSong(
-        playlistId: widget.playlistId,
-        songId: songId,
-      );
-      if (mounted) {
-        await _loadPlaylist();
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('移除失败: $e')),
-        );
-      }
-    }
-  }
-
-  void _playSong(Song song) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('正在播放: ${song.title}')),
     );
   }
 }

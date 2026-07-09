@@ -1,17 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:echo_vault_app/features/navigation/app_drawer.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:echo_vault_app/features/playlist/providers/playlist_provider.dart';
-import 'package:echo_vault_app/features/playlist/services/playlist_repository.dart';
 import 'package:echo_vault_app/features/playlist/widgets/playlist_tile.dart';
-import 'package:echo_vault_app/main.dart' show AppDrawer;
-import 'package:echo_vault_app/features/library/services/grpc_providers.dart';
-
-// 歌单仓储提供者
-final playlistRepositoryProvider = Provider<PlaylistRepository>((ref) {
-  final clientManager = ref.watch(grpcClientProvider);
-  return PlaylistRepository(clientManager);
-});
 
 class PlaylistListPage extends ConsumerStatefulWidget {
   const PlaylistListPage({super.key});
@@ -24,184 +15,191 @@ class _PlaylistListPageState extends ConsumerState<PlaylistListPage> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadPlaylists();
-    });
-  }
-
-  Future<void> _loadPlaylists() async {
-    final notifier = ref.read(playlistListProvider.notifier);
-    notifier.setLoading();
-    try {
-      final repository = ref.read(playlistRepositoryProvider);
-      final playlists = await repository.listPlaylists();
-      if (mounted) {
-        notifier.setPlaylists(playlists);
-      }
-    } catch (e) {
-      if (mounted) {
-        notifier.setError(e.toString());
-      }
-    }
+    Future.microtask(() => ref.read(playlistProvider.notifier).loadPlaylists());
   }
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(playlistListProvider);
+    final state = ref.watch(playlistProvider);
 
     return Scaffold(
+      drawer: const AppDrawer(),
       appBar: AppBar(
         title: const Text('我的歌单'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () => _showCreateDialog(),
+            icon: const Icon(Icons.search),
+            onPressed: () => _showSearch(context),
           ),
         ],
       ),
-      drawer: const AppDrawer(),
-      body: _buildBody(state),
+      body: _buildBody(context, state),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _showCreateDialog(context),
+        child: const Icon(Icons.add),
+      ),
     );
   }
 
-  Widget _buildBody(PlaylistListState state) {
+  Widget _buildBody(BuildContext context, PlaylistState state) {
     switch (state.status) {
       case PlaylistStatus.loading:
         return const Center(child: CircularProgressIndicator());
       case PlaylistStatus.error:
         return Center(
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.error_outline, size: 64, color: Colors.red),
+              Icon(Icons.error_outline, size: 48, color: Theme.of(context).colorScheme.error),
               const SizedBox(height: 16),
               Text('加载失败: ${state.error}'),
-              const SizedBox(height: 16),
-              FilledButton(
-                onPressed: _loadPlaylists,
-                child: const Text('重试'),
-              ),
             ],
           ),
         );
       case PlaylistStatus.loaded:
-        if (state.playlists.isEmpty) {
-          return const Center(
+        final playlists = state.filteredPlaylists;
+        if (playlists.isEmpty) {
+          return Center(
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.queue_music, size: 64, color: Colors.grey),
-                SizedBox(height: 16),
-                Text('还没有歌单', style: TextStyle(color: Colors.grey)),
-                SizedBox(height: 8),
-                Text('点击右上角 + 创建第一个歌单', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                Icon(Icons.playlist_play, size: 64, color: Theme.of(context).colorScheme.outline),
+                const SizedBox(height: 16),
+                Text(
+                  state.searchQuery.isEmpty ? '暂无歌单，点击 + 创建' : '未找到匹配的歌单',
+                ),
               ],
             ),
           );
         }
         return RefreshIndicator(
-          onRefresh: _loadPlaylists,
-          child: ListView.builder(
-            itemCount: state.playlists.length,
-            itemBuilder: (context, index) {
-              final playlist = state.playlists[index];
-              return PlaylistTile(
-                playlist: playlist,
-                onTap: () => context.push('/playlist/${playlist.id}'),
-                onDelete: () => _deletePlaylist(playlist.id),
-              );
-            },
+          onRefresh: () async => ref.read(playlistProvider.notifier).loadPlaylists(),
+          child: ListView.separated(
+            itemCount: playlists.length,
+            separatorBuilder: (_, __) => const Divider(height: 1),
+            itemBuilder: (_, i) => Dismissible(
+              key: ValueKey(playlists[i].id),
+              direction: DismissDirection.endToStart,
+              background: Container(
+                alignment: Alignment.centerRight,
+                padding: const EdgeInsets.only(right: 16),
+                color: Colors.red,
+                child: const Icon(Icons.delete, color: Colors.white),
+              ),
+              confirmDismiss: (direction) async {
+                return await showDialog<bool>(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('删除歌单'),
+                    content: Text('确定要删除"${playlists[i].name}"吗？'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, false),
+                        child: const Text('取消'),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, true),
+                        child: const Text('删除', style: TextStyle(color: Colors.red)),
+                      ),
+                    ],
+                  ),
+                );
+              },
+              onDismissed: (_) {
+                ref.read(playlistProvider.notifier).deletePlaylist(playlists[i].id);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('已删除"${playlists[i].name}"')),
+                );
+              },
+              child: PlaylistTile(
+                playlist: playlists[i],
+                onTap: () => Navigator.pushNamed(context, '/playlist/${playlists[i].id}'),
+              ),
+            ),
           ),
         );
-      default:
-        return const SizedBox.shrink();
     }
   }
 
-  void _showCreateDialog() {
-    final nameController = TextEditingController();
+  void _showSearch(BuildContext context) {
     showDialog(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('创建歌单'),
+      builder: (context) => AlertDialog(
+        title: const Text('搜索歌单'),
         content: TextField(
-          controller: nameController,
-          decoration: const InputDecoration(
-            hintText: '歌单名称',
-            border: OutlineInputBorder(),
-          ),
           autofocus: true,
-          onSubmitted: (_) => _createPlaylist(nameController),
+          decoration: const InputDecoration(
+            hintText: '输入歌单名称...',
+            prefixIcon: Icon(Icons.search),
+          ),
+          onChanged: (v) => ref.read(playlistProvider.notifier).setQuery(v),
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
+            onPressed: () {
+              ref.read(playlistProvider.notifier).setQuery('');
+              Navigator.pop(context);
+            },
+            child: const Text('清除'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('完成'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showCreateDialog(BuildContext context) {
+    final nameController = TextEditingController();
+    final descController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('创建歌单'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: nameController,
+              decoration: const InputDecoration(
+                labelText: '歌单名称',
+                hintText: '输入歌单名称',
+              ),
+              autofocus: true,
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: descController,
+              decoration: const InputDecoration(
+                labelText: '描述（可选）',
+                hintText: '输入歌单描述',
+              ),
+              maxLines: 2,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
             child: const Text('取消'),
           ),
           FilledButton(
-            onPressed: () => _createPlaylist(nameController),
+            onPressed: () async {
+              if (nameController.text.trim().isNotEmpty) {
+                await ref.read(playlistProvider.notifier).createPlaylist(
+                  name: nameController.text.trim(),
+                  description: descController.text.trim().isNotEmpty ? descController.text.trim() : null,
+                );
+                if (context.mounted) Navigator.pop(context);
+              }
+            },
             child: const Text('创建'),
           ),
         ],
       ),
     );
-  }
-
-  Future<void> _createPlaylist(TextEditingController controller) async {
-    final name = controller.text.trim();
-    if (name.isEmpty) return;
-    
-    Navigator.pop(context);
-    
-    try {
-      final repository = ref.read(playlistRepositoryProvider);
-      final playlist = await repository.createPlaylist(name: name);
-      if (mounted) {
-        ref.read(playlistListProvider.notifier).addPlaylist(playlist);
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('创建失败: $e')),
-        );
-      }
-    }
-  }
-
-  Future<void> _deletePlaylist(String id) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('确认删除'),
-        content: const Text('确定要删除这个歌单吗？'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, false),
-            child: const Text('取消'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(dialogContext, true),
-            style: FilledButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('删除'),
-          ),
-        ],
-      ),
-    );
-    
-    if (confirmed != true || !mounted) return;
-    
-    try {
-      final repository = ref.read(playlistRepositoryProvider);
-      await repository.deletePlaylist(id);
-      if (mounted) {
-        ref.read(playlistListProvider.notifier).removePlaylist(id);
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('删除失败: $e')),
-        );
-      }
-    }
   }
 }
