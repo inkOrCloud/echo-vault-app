@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:echo_vault_app/features/navigation/app_drawer.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:echo_vault_app/features/library/providers/library_provider.dart';
 import 'package:echo_vault_app/features/library/widgets/song_list_tile.dart';
@@ -37,6 +38,7 @@ class _PlaylistDetailPageState extends ConsumerState<PlaylistDetailPage> {
 
     if (playlist == null) {
       return Scaffold(
+      drawer: const AppDrawer(),
         appBar: AppBar(title: const Text('歌单')),
         body: const Center(child: Text('歌单不存在')),
       );
@@ -47,6 +49,7 @@ class _PlaylistDetailPageState extends ConsumerState<PlaylistDetailPage> {
     final songs = libraryState.songs.where((s) => playlistSongIds.contains(s.id)).toList();
 
     return Scaffold(
+      drawer: const AppDrawer(),
       appBar: AppBar(
         title: Text(playlist.name),
         actions: [

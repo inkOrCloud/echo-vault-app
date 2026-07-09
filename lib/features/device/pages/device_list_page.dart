@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:echo_vault_app/features/navigation/app_drawer.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:echo_vault_app/features/device/providers/device_provider.dart';
 import 'package:echo_vault_app/features/device/widgets/device_tile.dart';
@@ -23,6 +24,7 @@ class _DeviceListPageState extends ConsumerState<DeviceListPage> {
     final state = ref.watch(deviceProvider);
 
     return Scaffold(
+      drawer: const AppDrawer(),
       appBar: AppBar(
         title: const Text('设备管理'),
         actions: [

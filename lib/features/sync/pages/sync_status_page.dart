@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:echo_vault_app/features/navigation/app_drawer.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:echo_vault_app/features/sync/providers/sync_provider.dart';
@@ -24,6 +25,7 @@ class _SyncStatusPageState extends ConsumerState<SyncStatusPage> {
     final theme = Theme.of(context);
 
     return Scaffold(
+      drawer: const AppDrawer(),
       appBar: AppBar(
         title: const Text('同步状态'),
         actions: [

@@ -10,6 +10,8 @@ import 'package:echo_vault_app/features/player/pages/player_page.dart';
 import 'package:echo_vault_app/features/library/models/scanned_file.dart';
 import 'package:echo_vault_app/features/playlist/pages/playlist_list_page.dart';
 import 'package:echo_vault_app/features/playlist/pages/playlist_detail_page.dart';
+import 'package:echo_vault_app/features/device/pages/device_list_page.dart';
+import 'package:echo_vault_app/features/sync/pages/sync_status_page.dart';
 import 'package:echo_vault_app/providers/auth_provider.dart';
 import 'package:echo_vault_app/providers/server_provider.dart';
 
@@ -53,6 +55,8 @@ final routerProvider = Provider<GoRouter>((ref) {
           return PlaylistDetailPage(playlistId: playlistId);
         },
       ),
+      GoRoute(path: '/devices', builder: (_, __) => const DeviceListPage()),
+      GoRoute(path: '/sync', builder: (_, __) => const SyncStatusPage()),
     ],
   );
 });

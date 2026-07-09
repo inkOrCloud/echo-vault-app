@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:echo_vault_app/features/navigation/app_drawer.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:echo_vault_app/features/library/providers/library_provider.dart';
 import 'package:echo_vault_app/features/library/widgets/song_list_tile.dart';
@@ -11,6 +12,7 @@ class LibraryPage extends ConsumerWidget {
     final state = ref.watch(libraryProvider);
     return Scaffold(
       appBar: AppBar(title: const Text('我的曲库')),
+      drawer: const AppDrawer(),
       body: Column(children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),

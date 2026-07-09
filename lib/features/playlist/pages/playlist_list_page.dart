@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:echo_vault_app/features/navigation/app_drawer.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:echo_vault_app/features/playlist/providers/playlist_provider.dart';
 import 'package:echo_vault_app/features/playlist/widgets/playlist_tile.dart';
@@ -22,6 +23,7 @@ class _PlaylistListPageState extends ConsumerState<PlaylistListPage> {
     final state = ref.watch(playlistProvider);
 
     return Scaffold(
+      drawer: const AppDrawer(),
       appBar: AppBar(
         title: const Text('我的歌单'),
         actions: [
